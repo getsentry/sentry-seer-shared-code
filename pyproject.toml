@@ -8,14 +8,13 @@ version = "0.1.0"
 description = "Shared Pydantic models for Sentry and Seer code review integration"
 requires-python = ">=3.11"
 readme = "README.md"
-license = {text = "Apache-2.0"}
+license = {text = "FSL-1.1-Apache-2.0"}
 authors = [
     {name = "Sentry Team", email = "oss@sentry.io"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
@@ -49,6 +48,9 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 sentry_seer_types = ["py.typed"]
+
+[tool.setuptools]
+license-files = ["LICENSE.md"]
 
 [tool.mypy]
 python_version = "3.11"

@@ -215,3 +215,9 @@ This package follows semantic versioning:
 - **Patch version** - Bug fixes, documentation
 
 Both Sentry and Seer must use compatible versions of this package.
+
+## License
+
+This project is licensed under the Functional Source License, Version 1.1, Apache 2.0 Future License. See the [LICENSE.md](LICENSE.md) file for details.
+
+The FSL allows you to use, copy, modify, and redistribute the software for any purpose except competing uses. After two years from the release date, the license automatically converts to Apache 2.0.
