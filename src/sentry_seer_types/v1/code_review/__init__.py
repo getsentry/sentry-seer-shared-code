@@ -6,14 +6,12 @@ from sentry_seer_types.v1.code_review.models import (
     BugPredictionSpecificInformation,
     CodegenPrReviewRequest,
     CodeReviewTaskRequest,
-    PrReviewConfig,
-    RepoDefinition,
-)
-from sentry_seer_types.v1.code_review.types import (
     CommentSeverity,
     GitProvider,
+    PrReviewConfig,
     PrReviewFeature,
     PrReviewTrigger,
+    RepoDefinition,
     RequestType,
 )
 
