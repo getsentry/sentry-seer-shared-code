@@ -9,9 +9,11 @@ from enum import StrEnum
 from typing import Final, Literal
 
 # Type alias for valid Git providers
+# Originally from getsentry/seer, now shared via sentry-seer-types
 GitProvider = Literal["github", "github_enterprise", "gitlab"]
 
 # Type alias for PR review request types
+# Originally from getsentry/seer, now shared via sentry-seer-types
 RequestType = Literal["pr-review", "pr-closed"]
 
 
@@ -21,6 +23,10 @@ class CommentSeverity(StrEnum):
 
     LOGAF (Low, Medium, High, Critical) is used to categorize the importance
     of issues found during code review.
+
+    Originally defined in: getsentry/seer (Seer codebase)
+    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
+    Now maintained in: sentry-seer-types as the shared source of truth
     """
 
     LOW = "low"
@@ -52,6 +58,10 @@ class PrReviewFeature(StrEnum):
     Features available in PR review.
 
     Controls which AI-powered features are enabled for a given PR review run.
+
+    Originally defined in: getsentry/seer (Seer codebase)
+    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
+    Now maintained in: sentry-seer-types as the shared source of truth
     """
 
     VANILLA = "vanilla"
@@ -66,6 +76,10 @@ class PrReviewTrigger(StrEnum):
     Events that trigger PR review execution.
 
     Determines what action caused Seer to start analyzing a PR.
+
+    Originally defined in: getsentry/seer (Seer codebase)
+    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
+    Now maintained in: sentry-seer-types as the shared source of truth
     """
 
     UNKNOWN = "unknown"

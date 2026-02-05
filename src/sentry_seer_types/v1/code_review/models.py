@@ -21,6 +21,10 @@ class RepoDefinition(BaseModel):
     Complete definition of a repository for code review operations.
 
     Contains all necessary information to identify and access a repository.
+
+    Originally defined in: getsentry/seer (Seer codebase)
+    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
+    Now maintained in: sentry-seer-types as the shared source of truth
     """
 
     organization_id: Optional[int] = Field(default=None, description="Sentry organization ID")
@@ -61,6 +65,10 @@ class BugPredictionSpecificInformation(BaseModel):
 
     Contains organization context and limits for AI-powered bug prediction
     during code review.
+
+    Originally defined in: getsentry/seer (Seer codebase)
+    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
+    Now maintained in: sentry-seer-types as the shared source of truth
     """
 
     callback_url: Optional[str] = Field(
@@ -111,6 +119,10 @@ class PrReviewConfig(BaseModel):
 
     Controls which features are enabled, how the review was triggered,
     and metadata about the trigger event.
+
+    Originally defined in: getsentry/seer (Seer codebase)
+    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
+    Now maintained in: sentry-seer-types as the shared source of truth
     """
 
     features: Dict[PrReviewFeature, bool] = Field(
@@ -148,6 +160,10 @@ class CodegenPrReviewRequest(BaseModel):
     Complete request payload for PR review operations.
 
     This is the primary model validated when Sentry sends a PR review request to Seer.
+
+    Originally defined in: getsentry/seer (Seer codebase)
+    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
+    Now maintained in: sentry-seer-types as the shared source of truth
     """
 
     repo: RepoDefinition = Field(description="Repository containing the code/PR to analyze")
@@ -176,6 +192,10 @@ class CodeReviewTaskRequest(BaseModel):
 
     This is the top-level payload structure sent to Seer's /v1/automation/overwatch-request
     endpoint. It wraps the actual request data with request type and authentication info.
+
+    Originally defined in: getsentry/seer (Seer codebase)
+    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
+    Now maintained in: sentry-seer-types as the shared source of truth
     """
 
     request_type: RequestType = Field(description="Type of code review operation to perform")
