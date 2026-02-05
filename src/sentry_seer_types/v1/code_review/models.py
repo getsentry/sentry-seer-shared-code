@@ -8,7 +8,7 @@ Unless otherwise stated, all classes are from: getsentry/sentry - src/sentry/see
 """
 from __future__ import annotations
 from enum import StrEnum
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal
 
 from pydantic import BaseModel, Field, root_validator
 
@@ -101,8 +101,8 @@ class RepoDefinition(BaseModel):
     Now maintained in: sentry-seer-types as the shared source of truth
     """
 
-    organization_id: Optional[int] = Field(default=None, description="Sentry organization ID")
-    integration_id: Optional[str] = Field(
+    organization_id: int | None = Field(default=None, description="Sentry organization ID")
+    integration_id: str | None = Field(
         default=None, description="Integration ID for accessing the repository"
     )
     provider: GitProvider = Field(
@@ -111,11 +111,11 @@ class RepoDefinition(BaseModel):
     owner: str = Field(description="Repository owner (organization or user)")
     name: str = Field(description="Repository name")
     external_id: str = Field(description="External repository ID from the provider")
-    base_commit_sha: Optional[str] = Field(
+    base_commit_sha: str | None = Field(
         default=None,
         description="Base commit SHA for PR review (the HEAD of the PR)",
     )
-    provider_raw: Optional[str] = Field(
+    provider_raw: str | None = Field(
         default=None,
         description="Original provider string before normalization",
     )
@@ -146,15 +146,15 @@ class BugPredictionSpecificInformation(BaseModel):
     Now maintained in: sentry-seer-types as the shared source of truth
     """
 
-    callback_url: Optional[str] = Field(
+    callback_url: str | None = Field(
         default=None,
         description="URL to call back with results when analysis completes",
     )
-    organization_id: Optional[int] = Field(
+    organization_id: int | None = Field(
         default=None,
         description="Sentry organization ID for context and billing",
     )
-    organization_slug: Optional[str] = Field(
+    organization_slug: str | None = Field(
         default=None,
         description="Sentry organization slug for display purposes",
     )
@@ -209,19 +209,19 @@ class SeerCodeReviewConfig(BaseModel):
         default=SeerCodeReviewTrigger.ON_COMMAND_PHRASE,
         description="Event that triggered this PR review",
     )
-    trigger_comment_id: Optional[int] = Field(
+    trigger_comment_id: int | None = Field(
         default=None,
         description="GitHub comment ID that triggered review (if trigger was a comment)",
     )
-    trigger_comment_type: Optional[Literal["issue_comment", "pull_request_review_comment"]] = Field(
+    trigger_comment_type: Literal["issue_comment", "pull_request_review_comment"] | None = Field(
         default=None,
         description="Type of comment that triggered review",
     )
-    trigger_user: Optional[str] = Field(
+    trigger_user: str | None = Field(
         default=None,
         description="GitHub username of the user who triggered review",
     )
-    trigger_user_id: Optional[int] = Field(
+    trigger_user_id: int | None = Field(
         default=None,
         description="GitHub user ID of the user who triggered review",
     )
@@ -245,7 +245,7 @@ class SeerCodeReviewRequestForPrReview(BaseModel):
 
     repo: RepoDefinition = Field(description="Repository containing the code/PR to analyze")
     pr_id: int = Field(description="Pull request number", gt=0)
-    codecov_status: Optional[Dict[str, str]] = Field(
+    codecov_status: Dict[str, str] | None = Field(
         default=None,
         description="Codecov test coverage status for the PR",
     )
@@ -253,11 +253,11 @@ class SeerCodeReviewRequestForPrReview(BaseModel):
         default_factory=list,
         description="Additional repositories accessible for code search and context",
     )
-    bug_prediction_specific_information: Optional[BugPredictionSpecificInformation] = Field(
+    bug_prediction_specific_information: BugPredictionSpecificInformation | None = Field(
         default=None,
         description="Bug prediction configuration (if feature is enabled)",
     )
-    config: Optional[SeerCodeReviewConfig] = Field(
+    config: SeerCodeReviewConfig | None = Field(
         default=None,
         description="PR review execution configuration",
     )
@@ -299,11 +299,11 @@ class SeerCodeReviewRequestForPrClosed(BaseModel):
         default_factory=list,
         description="Additional repositories accessible for code search and context",
     )
-    bug_prediction_specific_information: Optional[BugPredictionSpecificInformation] = Field(
+    bug_prediction_specific_information: BugPredictionSpecificInformation | None = Field(
         default=None,
         description="Bug prediction configuration (if feature is enabled)",
     )
-    config: Optional[SeerCodeReviewConfig] = Field(
+    config: SeerCodeReviewConfig | None = Field(
         default=None,
         description="PR review execution configuration",
     )
