@@ -16,6 +16,7 @@ from sentry_seer_types.v1.code_review.types import (
 )
 
 
+# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
 class RepoDefinition(BaseModel):
     """
     Complete definition of a repository for code review operations.
@@ -59,6 +60,7 @@ class RepoDefinition(BaseModel):
         return values
 
 
+# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
 class BugPredictionSpecificInformation(BaseModel):
     """
     Additional configuration for bug prediction features.
@@ -113,6 +115,7 @@ class BugPredictionSpecificInformation(BaseModel):
     )
 
 
+# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
 class PrReviewConfig(BaseModel):
     """
     Configuration for PR review execution.
@@ -155,6 +158,7 @@ class PrReviewConfig(BaseModel):
         return self.features.get(feature, False)
 
 
+# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
 class CodegenPrReviewRequest(BaseModel):
     """
     Complete request payload for PR review operations.
@@ -186,6 +190,7 @@ class CodegenPrReviewRequest(BaseModel):
     )
 
 
+# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
 class CodeReviewTaskRequest(BaseModel):
     """
     Wrapper for code review task requests.

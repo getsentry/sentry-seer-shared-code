@@ -155,7 +155,8 @@ pip install dist/sentry_seer_types-*.whl
 
 # Test imports
 python -c "from sentry_seer_types import CodeReviewTaskRequest; print('✅ Top-level import works')"
-python -c "from sentry_seer_types.codegen import CodeReviewTaskRequest; print('✅ Submodule import works')"
+python -c "from sentry_seer_types.v1.code_review import CodeReviewTaskRequest; print('✅ v1 import works')"
+python -c "from sentry_seer_types.v2.code_review import CodeReviewTaskRequest; print('✅ v2 import works')"
 
 # Test validation
 python -c "
@@ -179,7 +180,8 @@ rm -rf test-env
 
 **Expected Results:**
 - ✅ Top-level import works
-- ✅ Submodule import works
+- ✅ v1 import works
+- ✅ v2 import works
 - ✅ Validation works: pr-review
 
 #### Complete Validation Script
