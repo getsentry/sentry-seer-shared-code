@@ -12,315 +12,174 @@ from typing import Any, Dict, List, Literal
 
 from pydantic import BaseModel, Field, root_validator
 
+from __future__ import annotations
+
+from datetime import datetime
+from enum import StrEnum
+from typing import Literal
+
+from pydantic import BaseModel, Field
+
+from sentry.seer.models import SeerRepoDefinition
 
 # =============================================================================
-# Type Aliases
+# Code Review Models (ported from Seer)
 # =============================================================================
 
 
-# Type alias for valid Git providers
-GitProvider = Literal["github", "github_enterprise", "gitlab"]
-
-
-# Type alias for PR review request types
-SeerCodeReviewRequestType = Literal["pr-review", "pr-closed"]
-
-
-# =============================================================================
-# Enums
-# =============================================================================
+class CommentSeverity(StrEnum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
 
 
 class SeerCodeReviewFeature(StrEnum):
-    """
-    Features available in PR review.
-
-    Controls which AI-powered features are enabled for a given PR review run.
-
-    Originally defined in: getsentry/seer (Seer codebase)
-    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
-    Now maintained in: sentry-seer-types as the shared source of truth
-    """
-
-    VANILLA = "vanilla"
-    """Basic PR review without advanced features"""
-
     BUG_PREDICTION = "bug_prediction"
-    """AI-powered bug prediction using static analysis and ML models"""
-
 
 
 class SeerCodeReviewTrigger(StrEnum):
-    """
-    Events that trigger PR review execution.
-
-    Determines what action caused Seer to start analyzing a PR.
-
-    Originally defined in: getsentry/seer (Seer codebase)
-    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
-    Now maintained in: sentry-seer-types as the shared source of truth
-    """
-
     UNKNOWN = "unknown"
-    """Trigger source could not be determined"""
-
     ON_COMMAND_PHRASE = "on_command_phrase"
-    """Triggered by a user comment containing a command phrase (e.g., '@sentry review')"""
-
     ON_READY_FOR_REVIEW = "on_ready_for_review"
-    """Triggered when a PR moves from draft to ready for review"""
-
     ON_NEW_COMMIT = "on_new_commit"
-    """Triggered when new commits are pushed to the PR"""
 
     @classmethod
-    def _missing_(cls, value: object) -> "SeerCodeReviewTrigger":
-        """
-        Handle unknown trigger values gracefully.
-
-        When an unknown trigger value is encountered, return UNKNOWN instead
-        of raising a ValueError. This ensures backward compatibility when new
-        triggers are added.
-        """
+    def _missing_(cls: type[SeerCodeReviewTrigger], value: object) -> SeerCodeReviewTrigger:
         return cls.UNKNOWN
 
 
-# =============================================================================
-# Pydantic Models
-# =============================================================================
+class SeerCodeReviewRequestType(StrEnum):
+    """Request type for Seer code review requests."""
 
-
-class RepoDefinition(BaseModel):
-    """
-    Complete definition of a repository for code review operations.
-
-    Contains all necessary information to identify and access a repository.
-
-    Originally defined in: getsentry/seer (Seer codebase)
-    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
-    Now maintained in: sentry-seer-types as the shared source of truth
-    """
-
-    organization_id: int | None = Field(default=None, description="Sentry organization ID")
-    integration_id: str | None = Field(
-        default=None, description="Integration ID for accessing the repository"
-    )
-    provider: GitProvider = Field(
-        description="Git provider type (github, github_enterprise, gitlab)"
-    )
-    owner: str = Field(description="Repository owner (organization or user)")
-    name: str = Field(description="Repository name")
-    external_id: str = Field(description="External repository ID from the provider")
-    base_commit_sha: str | None = Field(
-        default=None,
-        description="Base commit SHA for PR review (the HEAD of the PR)",
-    )
-    provider_raw: str | None = Field(
-        default=None,
-        description="Original provider string before normalization",
-    )
-
-    @property
-    def full_name(self) -> str:
-        """Get the full repository name in 'owner/name' format."""
-        return f"{self.owner}/{self.name}"
-
-    @root_validator(pre=True)
-    def store_provider_raw(cls, values: Any) -> Any:
-        """Store the original provider value before Pydantic validates it."""
-        if isinstance(values, dict) and "provider" in values and "provider_raw" not in values:
-            values["provider_raw"] = values["provider"]
-        return values
-
-
-
-class BugPredictionSpecificInformation(BaseModel):
-    """
-    Additional configuration for bug prediction features.
-
-    Contains organization context and limits for AI-powered bug prediction
-    during code review.
-
-    Originally defined in: getsentry/seer (Seer codebase)
-    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
-    Now maintained in: sentry-seer-types as the shared source of truth
-    """
-
-    callback_url: str | None = Field(
-        default=None,
-        description="URL to call back with results when analysis completes",
-    )
-    organization_id: int | None = Field(
-        default=None,
-        description="Sentry organization ID for context and billing",
-    )
-    organization_slug: str | None = Field(
-        default=None,
-        description="Sentry organization slug for display purposes",
-    )
-    warnings: List[Dict[str, Any]] = Field(
-        default_factory=list,
-        description="Static analysis warnings to incorporate into bug prediction",
-    )
-    max_num_associations: int = Field(
-        default=10,
-        ge=1,
-        le=100,
-        description="Maximum number of code associations to analyze per prediction",
-    )
-    max_num_issues_analyzed: int = Field(
-        default=10,
-        ge=1,
-        le=50,
-        description="Maximum number of issues to analyze in parallel",
-    )
-    should_post_to_overwatch: bool = Field(
-        default=False,
-        description="Whether to post results to Overwatch monitoring system",
-    )
-    should_publish_comments: bool = Field(
-        default=False,
-        description="Whether to publish findings as GitHub PR comments",
-    )
-    is_local_run: bool = Field(
-        default=False,
-        description="True if running in local development mode",
-    )
-
+    PR_REVIEW = "pr-review"
+    PR_CLOSED = "pr-closed"
 
 
 class SeerCodeReviewConfig(BaseModel):
-    """
-    Configuration for PR review execution.
-
-    Controls which features are enabled, how the review was triggered,
-    and metadata about the trigger event.
-
-    Originally defined in: getsentry/seer (Seer codebase)
-    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
-    Now maintained in: sentry-seer-types as the shared source of truth
-    """
-
-    features: Dict[SeerCodeReviewFeature, bool] = Field(
-        default_factory=lambda: {SeerCodeReviewFeature.VANILLA: True},
-        description="Map of feature names to enabled/disabled status",
-    )
-    trigger: SeerCodeReviewTrigger = Field(
-        default=SeerCodeReviewTrigger.ON_COMMAND_PHRASE,
-        description="Event that triggered this PR review",
-    )
-    trigger_comment_id: int | None = Field(
-        default=None,
-        description="GitHub comment ID that triggered review (if trigger was a comment)",
-    )
-    trigger_comment_type: Literal["issue_comment", "pull_request_review_comment"] | None = Field(
-        default=None,
-        description="Type of comment that triggered review",
-    )
-    trigger_user: str | None = Field(
-        default=None,
-        description="GitHub username of the user who triggered review",
-    )
-    trigger_user_id: int | None = Field(
-        default=None,
-        description="GitHub user ID of the user who triggered review",
-    )
+    features: dict[SeerCodeReviewFeature, bool] = Field(default_factory=lambda: {})
+    trigger: SeerCodeReviewTrigger
+    trigger_comment_id: int | None = None
+    trigger_comment_type: Literal["issue_comment"] | None = None
+    trigger_user: str | None = None
+    trigger_user_id: int | None = None
+    trigger_at: datetime | None = None  # When the trigger event occurred on GitHub
+    sentry_received_trigger_at: datetime | None = None  # When Sentry received the webhook
 
     def is_feature_enabled(self, feature: SeerCodeReviewFeature) -> bool:
-        """Check if a specific feature is enabled in this configuration."""
         return self.features.get(feature, False)
 
+    def get_minimum_severity_for_feature(self, feature: SeerCodeReviewFeature) -> CommentSeverity:
+        return CommentSeverity.MEDIUM
+
+
+class BugPredictionSpecificInformation(BaseModel):
+    """Information specific to bug prediction feature."""
+
+    organization_id: int
+    organization_slug: str
+
+
+# =============================================================================
+# Code Review Repo Definition Models
+# =============================================================================
+
+
+class SeerCodeReviewRepoDefinition(BaseModel):
+    """
+    Repo definition for code review with required fields for Sentry.
+
+    This is a "shortened" version of SeerRepoDefinition that only includes
+    the fields actually sent by Sentry for code review requests.
+    """
+
+    provider: str
+    owner: str
+    name: str
+    external_id: str
+    base_commit_sha: str
+    # Optional in base, overridden in subclasses based on request type
+    organization_id: int | None = None
+    integration_id: str | None = None
+
+
+class SeerCodeReviewRepoForPrReview(SeerCodeReviewRepoDefinition):
+    """
+    Repo definition for PR review requests.
+
+    organization_id and integration_id are optional for PR review requests,
+    though organization_id is typically included.
+    """
+
+    pass  # Inherits optional fields from base
+
+
+class SeerCodeReviewRepoForPrClosed(SeerCodeReviewRepoDefinition):
+    """
+    Repo definition for PR closed requests.
+
+    organization_id and integration_id are required for PR closed requests
+    to support metrics and dashboarding.
+    """
+
+    organization_id: int  # Override to make required
+    integration_id: str  # Override to make required
+
+
+# =============================================================================
+# Code Review Request Models
+# =============================================================================
+
+
+class SeerCodeReviewBaseRequest(BaseModel):
+    repo: SeerRepoDefinition
+    pr_id: int
+    more_readable_repos: list[SeerRepoDefinition] = Field(default_factory=list)
+
+
+class SeerCodeReviewRequest(SeerCodeReviewBaseRequest):
+    bug_prediction_specific_information: BugPredictionSpecificInformation
+    config: SeerCodeReviewConfig | None = None
 
 
 class SeerCodeReviewRequestForPrReview(BaseModel):
-    """
-    Complete request payload for PR review operations.
+    """Request model for PR review with optional organization_id and integration_id."""
 
-    This is the primary model validated when Sentry sends a PR review request to Seer.
-
-    Originally defined in: getsentry/seer (Seer codebase)
-    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
-    Now maintained in: sentry-seer-types as the shared source of truth
-    """
-
-    repo: RepoDefinition = Field(description="Repository containing the code/PR to analyze")
-    pr_id: int = Field(description="Pull request number", gt=0)
-    codecov_status: Dict[str, str] | None = Field(
-        default=None,
-        description="Codecov test coverage status for the PR",
-    )
-    more_readable_repos: List[RepoDefinition] = Field(
-        default_factory=list,
-        description="Additional repositories accessible for code search and context",
-    )
-    bug_prediction_specific_information: BugPredictionSpecificInformation | None = Field(
-        default=None,
-        description="Bug prediction configuration (if feature is enabled)",
-    )
-    config: SeerCodeReviewConfig | None = Field(
-        default=None,
-        description="PR review execution configuration",
-    )
-
-
-
-class SeerCodeReviewTaskRequestForPrReview(BaseModel):
-    """
-    Wrapper for code review task requests.
-
-    This is the top-level payload structure sent to Seer's /v1/automation/overwatch-request
-    endpoint. It wraps the actual request data with request type and authentication info.
-
-    Originally defined in: getsentry/seer (Seer codebase)
-    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
-    Now maintained in: sentry-seer-types as the shared source of truth
-    """
-
-    request_type: SeerCodeReviewRequestType = Field(description="Type of code review operation to perform")
-    external_owner_id: str = Field(
-        description="External repository owner ID for authentication"
-    )
-    data: SeerCodeReviewRequestForPrReview = Field(description="The actual request data for the operation")
-
+    repo: SeerCodeReviewRepoForPrReview
+    pr_id: int
+    more_readable_repos: list[SeerCodeReviewRepoForPrReview] = Field(default_factory=list)
+    bug_prediction_specific_information: BugPredictionSpecificInformation
+    config: SeerCodeReviewConfig | None = None
+    experiment_enabled: bool = False
 
 
 class SeerCodeReviewRequestForPrClosed(BaseModel):
-    """
-    Request payload for PR closed operations.
+    """Request model for PR closed with required organization_id and integration_id."""
 
-    Similar to PrReview but for when a PR is closed, used for metrics and cleanup.
+    repo: SeerCodeReviewRepoForPrClosed
+    pr_id: int
+    more_readable_repos: list[SeerCodeReviewRepoForPrClosed] = Field(default_factory=list)
+    bug_prediction_specific_information: BugPredictionSpecificInformation
+    config: SeerCodeReviewConfig | None = None
 
-    Originally defined in: getsentry/sentry - src/sentry/seer/code_review/models.py
-    """
 
-    repo: RepoDefinition = Field(description="Repository containing the closed PR")
-    pr_id: int = Field(description="Pull request number", gt=0)
-    more_readable_repos: List[RepoDefinition] = Field(
-        default_factory=list,
-        description="Additional repositories accessible for code search and context",
-    )
-    bug_prediction_specific_information: BugPredictionSpecificInformation | None = Field(
-        default=None,
-        description="Bug prediction configuration (if feature is enabled)",
-    )
-    config: SeerCodeReviewConfig | None = Field(
-        default=None,
-        description="PR review execution configuration",
-    )
+class SeerCodeReviewTaskRequest(BaseModel):
+    data: SeerCodeReviewRequest
+    external_owner_id: str
+    request_type: SeerCodeReviewRequestType
 
+
+class SeerCodeReviewTaskRequestForPrReview(BaseModel):
+    """Task request wrapper for PR review."""
+
+    data: SeerCodeReviewRequestForPrReview
+    external_owner_id: str
+    request_type: SeerCodeReviewRequestType
 
 
 class SeerCodeReviewTaskRequestForPrClosed(BaseModel):
-    """
-    Wrapper for PR closed task requests.
+    """Task request wrapper for PR closed."""
 
-    This is sent when a PR is closed to trigger cleanup or final metrics collection.
-
-    Originally defined in: getsentry/sentry - src/sentry/seer/code_review/models.py
-    """
-
-    request_type: SeerCodeReviewRequestType = Field(description="Type of code review operation to perform")
-    external_owner_id: str = Field(
-        description="External repository owner ID for authentication"
-    )
-    data: SeerCodeReviewRequestForPrClosed = Field(description="The actual request data for the operation")
+    data: SeerCodeReviewRequestForPrClosed
+    external_owner_id: str
+    request_type: SeerCodeReviewRequestType
