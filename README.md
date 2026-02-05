@@ -62,6 +62,12 @@ def test_webhook_creates_valid_payload():
 # Install dev dependencies
 pip install -e ".[dev]"
 
+# Install pre-commit hooks (recommended)
+pre-commit install
+
+# Run pre-commit hooks manually
+pre-commit run --all-files
+
 # Run tests with coverage
 pytest
 

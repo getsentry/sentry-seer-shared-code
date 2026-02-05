@@ -41,6 +41,8 @@ jobs:
         if: matrix.python-version == '3.11' && matrix.pydantic-version == 'v2'
         run: ruff check src/ tests/
       
+      # Type checking with Pydantic v2 only - v2 provides better type inference
+      # and the codebase uses modern Python 3.11+ type hints
       - name: Run type checking (Pydantic v2 only)
         if: matrix.pydantic-version == 'v2'
         run: mypy src/
