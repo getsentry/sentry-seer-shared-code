@@ -9,8 +9,10 @@ from sentry_seer_types.v1.code_review.models import (
     RepoDefinition,
     SeerCodeReviewConfig,
     SeerCodeReviewFeature,
+    SeerCodeReviewRequestForPrClosed,
     SeerCodeReviewRequestForPrReview,
     SeerCodeReviewRequestType,
+    SeerCodeReviewTaskRequestForPrClosed,
     SeerCodeReviewTaskRequestForPrReview,
     SeerCodeReviewTrigger,
 )
@@ -20,7 +22,9 @@ __all__ = [
     "BugPredictionSpecificInformation",
     "RepoDefinition",
     "SeerCodeReviewConfig",
+    "SeerCodeReviewRequestForPrClosed",
     "SeerCodeReviewRequestForPrReview",
+    "SeerCodeReviewTaskRequestForPrClosed",
     "SeerCodeReviewTaskRequestForPrReview",
     # Types and enums
     "CommentSeverity",

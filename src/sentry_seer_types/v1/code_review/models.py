@@ -318,3 +318,46 @@ class SeerCodeReviewTaskRequestForPrReview(BaseModel):
         description="External repository owner ID for authentication"
     )
     data: SeerCodeReviewRequestForPrReview = Field(description="The actual request data for the operation")
+
+
+
+class SeerCodeReviewRequestForPrClosed(BaseModel):
+    """
+    Request payload for PR closed operations.
+
+    Similar to PrReview but for when a PR is closed, used for metrics and cleanup.
+
+    Originally defined in: getsentry/sentry - src/sentry/seer/code_review/models.py
+    """
+
+    repo: RepoDefinition = Field(description="Repository containing the closed PR")
+    pr_id: int = Field(description="Pull request number", gt=0)
+    more_readable_repos: List[RepoDefinition] = Field(
+        default_factory=list,
+        description="Additional repositories accessible for code search and context",
+    )
+    bug_prediction_specific_information: Optional[BugPredictionSpecificInformation] = Field(
+        default=None,
+        description="Bug prediction configuration (if feature is enabled)",
+    )
+    config: Optional[SeerCodeReviewConfig] = Field(
+        default=None,
+        description="PR review execution configuration",
+    )
+
+
+
+class SeerCodeReviewTaskRequestForPrClosed(BaseModel):
+    """
+    Wrapper for PR closed task requests.
+
+    This is sent when a PR is closed to trigger cleanup or final metrics collection.
+
+    Originally defined in: getsentry/sentry - src/sentry/seer/code_review/models.py
+    """
+
+    request_type: SeerCodeReviewRequestType = Field(description="Type of code review operation to perform")
+    external_owner_id: str = Field(
+        description="External repository owner ID for authentication"
+    )
+    data: SeerCodeReviewRequestForPrClosed = Field(description="The actual request data for the operation")
