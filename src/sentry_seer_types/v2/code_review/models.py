@@ -1,17 +1,69 @@
 """
-Code review request and configuration models.
+Code review request and configuration models (Pydantic v2).
 
-This module contains the main Pydantic models for Sentry→Seer code review API calls.
-These models define the structure of payloads sent from Sentry when triggering
-PR reviews, bug prediction, and other code analysis features.
+This module contains the Pydantic v2 models for Sentry→Seer code review API calls.
 """
 
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Dict, List, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
-from sentry_seer_types.v2.base import RepoDefinition
-from sentry_seer_types.v2.types import PrReviewFeature, PrReviewTrigger, RequestType
+from sentry_seer_types.v2.code_review.types import (
+    GitProvider,
+    PrReviewFeature,
+    PrReviewTrigger,
+    RequestType,
+)
+
+
+class RepoDefinition(BaseModel):
+    """
+    Complete definition of a repository for code review operations.
+
+    Contains all necessary information to identify and access a repository.
+    """
+
+    organization_id: Annotated[
+        int | None, Field(default=None, description="Sentry organization ID")
+    ]
+    integration_id: Annotated[
+        str | None,
+        Field(default=None, description="Integration ID for accessing the repository"),
+    ]
+    provider: Annotated[
+        GitProvider,
+        Field(description="Git provider type (github, github_enterprise, gitlab)"),
+    ]
+    owner: Annotated[str, Field(description="Repository owner (organization or user)")]
+    name: Annotated[str, Field(description="Repository name")]
+    external_id: Annotated[str, Field(description="External repository ID from the provider")]
+    base_commit_sha: Annotated[
+        str | None,
+        Field(
+            default=None,
+            description="Base commit SHA for PR review (the HEAD of the PR)",
+        ),
+    ]
+    provider_raw: Annotated[
+        str | None,
+        Field(
+            default=None,
+            description="Original provider string before normalization",
+        ),
+    ]
+
+    @property
+    def full_name(self) -> str:
+        """Get the full repository name in 'owner/name' format."""
+        return f"{self.owner}/{self.name}"
+
+    @model_validator(mode="before")
+    @classmethod
+    def store_provider_raw(cls, data: Any) -> Any:
+        """Store the original provider value before Pydantic validates it."""
+        if isinstance(data, dict) and "provider" in data and "provider_raw" not in data:
+            data["provider_raw"] = data["provider"]
+        return data
 
 
 class BugPredictionSpecificInformation(BaseModel):
@@ -41,7 +93,6 @@ class BugPredictionSpecificInformation(BaseModel):
         Field(
             default=None,
             description="Sentry organization slug for display purposes",
-            examples=["my-company", "acme-corp"],
         ),
     ]
     warnings: Annotated[
@@ -133,7 +184,6 @@ class PrReviewConfig(BaseModel):
         Field(
             default=None,
             description="GitHub username of the user who triggered review",
-            examples=["octocat", "johndoe"],
         ),
     ]
     trigger_user_id: Annotated[
@@ -145,38 +195,19 @@ class PrReviewConfig(BaseModel):
     ]
 
     def is_feature_enabled(self, feature: PrReviewFeature) -> bool:
-        """
-        Check if a specific feature is enabled in this configuration.
-
-        Args:
-            feature: The feature to check
-
-        Returns:
-            True if the feature is explicitly enabled, False otherwise
-        """
+        """Check if a specific feature is enabled in this configuration."""
         return self.features.get(feature, False)
 
 
-class CodegenBaseRequest(BaseModel):
+class CodegenPrReviewRequest(BaseModel):
     """
-    Base request model for all code generation operations.
+    Complete request payload for PR review operations.
 
-    Contains common fields required by all codegen features including repository
-    information and PR context.
+    This is the primary model validated when Sentry sends a PR review request to Seer.
     """
 
-    repo: Annotated[
-        RepoDefinition,
-        Field(description="Repository containing the code/PR to analyze"),
-    ]
-    pr_id: Annotated[
-        int,
-        Field(
-            description="Pull request number",
-            gt=0,
-            examples=[42, 123],
-        ),
-    ]
+    repo: Annotated[RepoDefinition, Field(description="Repository containing the code/PR to analyze")]
+    pr_id: Annotated[int, Field(description="Pull request number", gt=0)]
     codecov_status: Annotated[
         dict[str, str] | None,
         Field(
@@ -191,18 +222,6 @@ class CodegenBaseRequest(BaseModel):
             description="Additional repositories accessible for code search and context",
         ),
     ]
-
-
-class CodegenPrReviewRequest(CodegenBaseRequest):
-    """
-    Complete request payload for PR review operations.
-
-    Extends CodegenBaseRequest with PR review-specific configuration including
-    bug prediction settings and feature toggles.
-
-    This is the primary model validated when Sentry sends a PR review request to Seer.
-    """
-
     bug_prediction_specific_information: Annotated[
         BugPredictionSpecificInformation | None,
         Field(
@@ -227,26 +246,6 @@ class CodeReviewTaskRequest(BaseModel):
     endpoint. It wraps the actual request data with request type and authentication info.
     """
 
-    request_type: Annotated[
-        RequestType,
-        Field(
-            description="Type of code review operation to perform",
-            examples=["pr-review", "pr-closed"],
-        ),
-    ]
-    external_owner_id: Annotated[
-        str,
-        Field(
-            description="External repository owner ID for authentication",
-            examples=["123456", "org-abc"],
-        ),
-    ]
-    data: Annotated[
-        CodegenPrReviewRequest,
-        Field(description="The actual request data for the operation"),
-    ]
-
-
-# Backward compatibility aliases
-# Some parts of Seer may still use these names
-CodegenRequestBase = CodegenBaseRequest
+    request_type: Annotated[RequestType, Field(description="Type of code review operation to perform")]
+    external_owner_id: Annotated[str, Field(description="External repository owner ID for authentication")]
+    data: Annotated[CodegenPrReviewRequest, Field(description="The actual request data for the operation")]

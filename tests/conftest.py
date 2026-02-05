@@ -22,9 +22,9 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "pydantic_v2: mark test to run only with Pydantic v2")
 
 
-def pytest_ignore_collect(path, config):
+def pytest_ignore_collect(collection_path, config):
     """Ignore collecting test files based on pydantic version."""
-    path_str = str(path)
+    path_str = str(collection_path)
     
     # Don't collect v2 tests if pydantic v1 is installed
     if PYDANTIC_VERSION < 2:

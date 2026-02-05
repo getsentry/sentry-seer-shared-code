@@ -1,5 +1,5 @@
 """
-Tests for Pydantic v2 codegen request models.
+Tests for Pydantic v2 code review models.
 
 Validates the structure of payloads sent from Sentry to Seer for code review.
 These tests ensure backward compatibility and correct validation behavior.
@@ -8,15 +8,15 @@ These tests ensure backward compatibility and correct validation behavior.
 import pytest
 from pydantic import ValidationError
 
-from sentry_seer_types.v2.base import RepoDefinition
-from sentry_seer_types.v2.codegen import (
+from sentry_seer_types.v2.code_review import (
     BugPredictionSpecificInformation,
-    CodegenBaseRequest,
     CodegenPrReviewRequest,
     CodeReviewTaskRequest,
     PrReviewConfig,
+    PrReviewFeature,
+    PrReviewTrigger,
+    RepoDefinition,
 )
-from sentry_seer_types.v2.types import PrReviewFeature, PrReviewTrigger
 
 
 class TestBugPredictionSpecificInformation:
@@ -123,61 +123,6 @@ class TestPrReviewConfig:
         assert config.trigger_comment_type is None
 
 
-class TestCodegenBaseRequest:
-    """Test base request model for codegen operations."""
-
-    def test_minimal_valid_request(self) -> None:
-        """Minimum required fields should create valid request."""
-        repo = RepoDefinition(
-            provider="github",
-            owner="getsentry",
-            name="sentry",
-            external_id="123",
-        )
-        request = CodegenBaseRequest(
-            repo=repo,
-            pr_id=42,
-        )
-        assert request.pr_id == 42
-        assert request.repo.full_name == "getsentry/sentry"
-        assert request.codecov_status is None
-        assert request.more_readable_repos == []
-
-    def test_pr_id_must_be_positive(self) -> None:
-        """PR ID must be greater than 0."""
-        repo = RepoDefinition(
-            provider="github",
-            owner="test",
-            name="repo",
-            external_id="1",
-        )
-        with pytest.raises(ValidationError):
-            CodegenBaseRequest(repo=repo, pr_id=0)
-
-        with pytest.raises(ValidationError):
-            CodegenBaseRequest(repo=repo, pr_id=-1)
-
-    def test_with_multiple_readable_repos(self) -> None:
-        """Should accept multiple related repositories."""
-        main_repo = RepoDefinition(
-            provider="github",
-            owner="getsentry",
-            name="sentry",
-            external_id="123",
-        )
-        related_repo = RepoDefinition(
-            provider="github",
-            owner="getsentry",
-            name="snuba",
-            external_id="456",
-        )
-        request = CodegenBaseRequest(
-            repo=main_repo,
-            pr_id=42,
-            more_readable_repos=[related_repo],
-        )
-        assert len(request.more_readable_repos) == 1
-        assert request.more_readable_repos[0].name == "snuba"
 
 
 class TestCodegenPrReviewRequest:

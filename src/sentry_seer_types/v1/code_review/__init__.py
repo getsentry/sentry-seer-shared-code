@@ -1,24 +1,19 @@
 """
-Pydantic v2 compatible models for Sentry-Seer integration.
-
-Use these models when working with Pydantic v2 (pydantic>=2).
-For example, in Seer which uses Pydantic v2.
-
-Example:
-    from sentry_seer_types.v2.code_review import CodeReviewTaskRequest
-    from sentry_seer_types.v2.code_review import PrReviewFeature
+Pydantic v1 code review models for Sentry-Seer integration.
 """
 
-from sentry_seer_types.v2.code_review import (
+from sentry_seer_types.v1.code_review.models import (
     BugPredictionSpecificInformation,
     CodegenPrReviewRequest,
     CodeReviewTaskRequest,
+    PrReviewConfig,
+    RepoDefinition,
+)
+from sentry_seer_types.v1.code_review.types import (
     CommentSeverity,
     GitProvider,
-    PrReviewConfig,
     PrReviewFeature,
     PrReviewTrigger,
-    RepoDefinition,
     RequestType,
 )
 

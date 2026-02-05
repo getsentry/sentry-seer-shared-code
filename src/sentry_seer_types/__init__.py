@@ -28,16 +28,11 @@ Examples:
 # Default to v2 for backward compatibility with Seer (if pydantic v2 is installed)
 # Otherwise use v1
 try:
-    from sentry_seer_types.v2 import (
-        BranchOverride,
+    from sentry_seer_types.v2.code_review import (
         BugPredictionSpecificInformation,
-        ChangeType,
-        CodegenBaseRequest,
         CodegenPrReviewRequest,
         CodeReviewTaskRequest,
         CommentSeverity,
-        FileChange,
-        FileChangeError,
         GitProvider,
         PrReviewConfig,
         PrReviewFeature,
@@ -47,16 +42,11 @@ try:
     )
 except ImportError:
     # Fallback to v1 if pydantic v2 is not available
-    from sentry_seer_types.v1 import (  # type: ignore[assignment]
-        BranchOverride,
+    from sentry_seer_types.v1.code_review import (  # type: ignore[assignment]
         BugPredictionSpecificInformation,
-        ChangeType,
-        CodegenBaseRequest,
         CodegenPrReviewRequest,
         CodeReviewTaskRequest,
         CommentSeverity,
-        FileChange,
-        FileChangeError,
         GitProvider,
         PrReviewConfig,
         PrReviewFeature,
@@ -68,19 +58,13 @@ except ImportError:
 __version__ = "0.1.0"
 
 __all__ = [
-    # Base models
-    "BranchOverride",
-    "FileChange",
-    "FileChangeError",
-    "RepoDefinition",
-    # Codegen models
+    # Models
     "BugPredictionSpecificInformation",
-    "CodegenBaseRequest",
     "CodegenPrReviewRequest",
     "CodeReviewTaskRequest",
     "PrReviewConfig",
+    "RepoDefinition",
     # Types and enums
-    "ChangeType",
     "CommentSeverity",
     "GitProvider",
     "PrReviewFeature",

@@ -1,17 +1,58 @@
 """
-Code review request and configuration models.
+Code review request and configuration models (Pydantic v1).
 
-This module contains the main Pydantic models for Sentry→Seer code review API calls.
-These models define the structure of payloads sent from Sentry when triggering
-PR reviews, bug prediction, and other code analysis features.
+This module contains the Pydantic v1 models for Sentry→Seer code review API calls.
 """
 
 from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 
-from sentry_seer_types.v1.base import RepoDefinition
-from sentry_seer_types.v1.types import PrReviewFeature, PrReviewTrigger, RequestType
+from sentry_seer_types.v1.code_review.types import (
+    GitProvider,
+    PrReviewFeature,
+    PrReviewTrigger,
+    RequestType,
+)
+
+
+class RepoDefinition(BaseModel):
+    """
+    Complete definition of a repository for code review operations.
+
+    Contains all necessary information to identify and access a repository.
+    """
+
+    organization_id: Optional[int] = Field(default=None, description="Sentry organization ID")
+    integration_id: Optional[str] = Field(
+        default=None, description="Integration ID for accessing the repository"
+    )
+    provider: GitProvider = Field(
+        description="Git provider type (github, github_enterprise, gitlab)"
+    )
+    owner: str = Field(description="Repository owner (organization or user)")
+    name: str = Field(description="Repository name")
+    external_id: str = Field(description="External repository ID from the provider")
+    base_commit_sha: Optional[str] = Field(
+        default=None,
+        description="Base commit SHA for PR review (the HEAD of the PR)",
+    )
+    provider_raw: Optional[str] = Field(
+        default=None,
+        description="Original provider string before normalization",
+    )
+
+    @property
+    def full_name(self) -> str:
+        """Get the full repository name in 'owner/name' format."""
+        return f"{self.owner}/{self.name}"
+
+    @root_validator(pre=True)
+    def store_provider_raw(cls, values: Any) -> Any:
+        """Store the original provider value before Pydantic validates it."""
+        if isinstance(values, dict) and "provider" in values and "provider_raw" not in values:
+            values["provider_raw"] = values["provider"]
+        return values
 
 
 class BugPredictionSpecificInformation(BaseModel):
@@ -98,31 +139,19 @@ class PrReviewConfig(BaseModel):
     )
 
     def is_feature_enabled(self, feature: PrReviewFeature) -> bool:
-        """
-        Check if a specific feature is enabled in this configuration.
-
-        Args:
-            feature: The feature to check
-
-        Returns:
-            True if the feature is explicitly enabled, False otherwise
-        """
+        """Check if a specific feature is enabled in this configuration."""
         return self.features.get(feature, False)
 
 
-class CodegenBaseRequest(BaseModel):
+class CodegenPrReviewRequest(BaseModel):
     """
-    Base request model for all code generation operations.
+    Complete request payload for PR review operations.
 
-    Contains common fields required by all codegen features including repository
-    information and PR context.
+    This is the primary model validated when Sentry sends a PR review request to Seer.
     """
 
     repo: RepoDefinition = Field(description="Repository containing the code/PR to analyze")
-    pr_id: int = Field(
-        description="Pull request number",
-        gt=0,
-    )
+    pr_id: int = Field(description="Pull request number", gt=0)
     codecov_status: Optional[Dict[str, str]] = Field(
         default=None,
         description="Codecov test coverage status for the PR",
@@ -131,18 +160,6 @@ class CodegenBaseRequest(BaseModel):
         default_factory=list,
         description="Additional repositories accessible for code search and context",
     )
-
-
-class CodegenPrReviewRequest(CodegenBaseRequest):
-    """
-    Complete request payload for PR review operations.
-
-    Extends CodegenBaseRequest with PR review-specific configuration including
-    bug prediction settings and feature toggles.
-
-    This is the primary model validated when Sentry sends a PR review request to Seer.
-    """
-
     bug_prediction_specific_information: Optional[BugPredictionSpecificInformation] = Field(
         default=None,
         description="Bug prediction configuration (if feature is enabled)",
@@ -161,15 +178,8 @@ class CodeReviewTaskRequest(BaseModel):
     endpoint. It wraps the actual request data with request type and authentication info.
     """
 
-    request_type: RequestType = Field(
-        description="Type of code review operation to perform",
-    )
+    request_type: RequestType = Field(description="Type of code review operation to perform")
     external_owner_id: str = Field(
-        description="External repository owner ID for authentication",
+        description="External repository owner ID for authentication"
     )
     data: CodegenPrReviewRequest = Field(description="The actual request data for the operation")
-
-
-# Backward compatibility aliases
-# Some parts of Seer may still use these names
-CodegenRequestBase = CodegenBaseRequest

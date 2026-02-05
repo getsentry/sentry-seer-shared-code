@@ -1,8 +1,8 @@
 """
 Type definitions and enums for code review features.
 
-This module contains enums and type definitions used across the code review
-integration between Sentry and Seer.
+This module contains enums and type definitions used in the Sentry-Seer
+code review integration.
 """
 
 from enum import StrEnum
@@ -10,9 +10,6 @@ from typing import Final, Literal
 
 # Type alias for valid Git providers
 GitProvider = Literal["github", "github_enterprise", "gitlab"]
-
-# Type alias for file change operations
-ChangeType = Literal["create", "edit", "delete"]
 
 # Type alias for PR review request types
 RequestType = Literal["pr-review", "pr-closed"]
@@ -40,12 +37,6 @@ class CommentSeverity(StrEnum):
 
         Returns:
             True if this severity is at least as severe as the minimum
-
-        Examples:
-            >>> CommentSeverity.HIGH.meets_minimum(CommentSeverity.MEDIUM)
-            True
-            >>> CommentSeverity.LOW.meets_minimum(CommentSeverity.HIGH)
-            False
         """
         severity_rankings: Final[dict[str, int]] = {
             "low": 1,

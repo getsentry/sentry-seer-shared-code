@@ -5,41 +5,31 @@ Use these models when working with Pydantic v1 (pydantic<2).
 For example, in Sentry which currently uses Pydantic v1.
 
 Example:
-    from sentry_seer_types.v1.codegen import CodeReviewTaskRequest
-    from sentry_seer_types.v1.types import PrReviewFeature
+    from sentry_seer_types.v1.code_review import CodeReviewTaskRequest
+    from sentry_seer_types.v1.code_review import PrReviewFeature
 """
 
-from sentry_seer_types.v1.base import BranchOverride, FileChange, FileChangeError, RepoDefinition
-from sentry_seer_types.v1.codegen import (
+from sentry_seer_types.v1.code_review import (
     BugPredictionSpecificInformation,
-    CodegenBaseRequest,
     CodegenPrReviewRequest,
     CodeReviewTaskRequest,
-    PrReviewConfig,
-)
-from sentry_seer_types.v1.types import (
-    ChangeType,
     CommentSeverity,
     GitProvider,
+    PrReviewConfig,
     PrReviewFeature,
     PrReviewTrigger,
+    RepoDefinition,
     RequestType,
 )
 
 __all__ = [
-    # Base models
-    "BranchOverride",
-    "FileChange",
-    "FileChangeError",
-    "RepoDefinition",
-    # Codegen models
+    # Models
     "BugPredictionSpecificInformation",
-    "CodegenBaseRequest",
     "CodegenPrReviewRequest",
     "CodeReviewTaskRequest",
     "PrReviewConfig",
+    "RepoDefinition",
     # Types and enums
-    "ChangeType",
     "CommentSeverity",
     "GitProvider",
     "PrReviewFeature",
