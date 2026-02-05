@@ -1,5 +1,5 @@
 """
-Tests for Pydantic v1 base models (RepoDefinition, FileChange, BranchOverride).
+Tests for Pydantic v2 base models (RepoDefinition, FileChange, BranchOverride).
 
 Validates core data structures and business logic in base models.
 """
@@ -7,7 +7,7 @@ Validates core data structures and business logic in base models.
 import pytest
 from pydantic import ValidationError
 
-from sentry_seer_types.v1.base import BranchOverride, FileChange, FileChangeError, RepoDefinition
+from sentry_seer_types.v2.base import BranchOverride, FileChange, FileChangeError, RepoDefinition
 
 
 class TestBranchOverride:

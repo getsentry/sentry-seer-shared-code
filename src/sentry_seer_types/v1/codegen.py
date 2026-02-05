@@ -10,8 +10,8 @@ from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
-from sentry_seer_types.base import RepoDefinition
-from sentry_seer_types.types import PrReviewFeature, PrReviewTrigger, RequestType
+from sentry_seer_types.v1.base import RepoDefinition
+from sentry_seer_types.v1.types import PrReviewFeature, PrReviewTrigger, RequestType
 
 
 class BugPredictionSpecificInformation(BaseModel):

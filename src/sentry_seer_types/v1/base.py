@@ -9,7 +9,7 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field, root_validator
 
-from sentry_seer_types.types import ChangeType, GitProvider
+from sentry_seer_types.v1.types import ChangeType, GitProvider
 
 
 class BranchOverride(BaseModel):

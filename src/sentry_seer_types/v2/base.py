@@ -5,11 +5,11 @@ This module contains foundational Pydantic models used across the Sentry-Seer
 integration, including repository definitions, file changes, and configuration.
 """
 
-from typing import Any, Optional
+from typing import Annotated, Any
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, model_validator
 
-from sentry_seer_types.types import ChangeType, GitProvider
+from sentry_seer_types.v2.types import ChangeType, GitProvider
 
 
 class BranchOverride(BaseModel):
@@ -30,9 +30,9 @@ class BranchOverride(BaseModel):
         True
     """
 
-    tag_name: str = Field(description="The tag key to match against")
-    tag_value: str = Field(description="The tag value to match against")
-    branch_name: str = Field(description="The branch to use when this tag matches")
+    tag_name: Annotated[str, Field(description="The tag key to match against")]
+    tag_value: Annotated[str, Field(description="The tag value to match against")]
+    branch_name: Annotated[str, Field(description="The branch to use when this tag matches")]
 
     def matches_event_tags(self, event_tags: list[dict[str, str | None]]) -> bool:
         """
@@ -58,36 +58,77 @@ class RepoDefinition(BaseModel):
     including authentication details, branch configuration, and custom instructions.
     """
 
-    organization_id: Optional[int] = Field(default=None, description="Sentry organization ID")
-    integration_id: Optional[str] = Field(
-        default=None, description="Integration ID for accessing the repository"
-    )
-    provider: GitProvider = Field(
-        description="Git provider type (github, github_enterprise, gitlab)"
-    )
-    owner: str = Field(description="Repository owner (organization or user)")
-    name: str = Field(description="Repository name")
-    external_id: str = Field(description="External repository ID from the provider")
-    branch_name: Optional[str] = Field(
-        default=None,
-        description="Specific branch for code review operations. If not set, uses default branch.",
-    )
-    branch_overrides: list[BranchOverride] = Field(
-        default_factory=list,
-        description="Dynamic branch selection based on event tags",
-    )
-    instructions: Optional[str] = Field(
-        default=None,
-        description="Custom instructions for AI agents when analyzing this repository",
-    )
-    base_commit_sha: Optional[str] = Field(
-        default=None,
-        description="Base commit SHA for PR review (the HEAD of the PR)",
-    )
-    provider_raw: Optional[str] = Field(
-        default=None,
-        description="Original provider string before normalization",
-    )
+    organization_id: Annotated[
+        int | None, Field(default=None, description="Sentry organization ID")
+    ]
+    integration_id: Annotated[
+        str | None,
+        Field(default=None, description="Integration ID for accessing the repository"),
+    ]
+    provider: Annotated[
+        GitProvider,
+        Field(
+            description="Git provider type (github, github_enterprise, gitlab)",
+            examples=["github", "github_enterprise"],
+        ),
+    ]
+    owner: Annotated[
+        str,
+        Field(
+            description="Repository owner (organization or user)",
+            examples=["getsentry", "my-org"],
+        ),
+    ]
+    name: Annotated[
+        str,
+        Field(description="Repository name", examples=["sentry", "my-project"]),
+    ]
+    external_id: Annotated[
+        str,
+        Field(
+            description="External repository ID from the provider",
+            examples=["123456", "repo-abc"],
+        ),
+    ]
+    branch_name: Annotated[
+        str | None,
+        Field(
+            default=None,
+            description="Specific branch for code review operations. If not set, uses default branch.",
+        ),
+    ]
+    branch_overrides: Annotated[
+        list[BranchOverride],
+        Field(
+            default_factory=list,
+            description="Dynamic branch selection based on event tags",
+        ),
+    ]
+    instructions: Annotated[
+        str | None,
+        Field(
+            default=None,
+            description="Custom instructions for AI agents when analyzing this repository",
+            examples=[
+                "Focus on security issues in authentication code",
+                "Ignore test files when reviewing",
+            ],
+        ),
+    ]
+    base_commit_sha: Annotated[
+        str | None,
+        Field(
+            default=None,
+            description="Base commit SHA for PR review (the HEAD of the PR)",
+        ),
+    ]
+    provider_raw: Annotated[
+        str | None,
+        Field(
+            default=None,
+            description="Original provider string before normalization",
+        ),
+    ]
 
     @property
     def full_name(self) -> str:
@@ -109,17 +150,18 @@ class RepoDefinition(BaseModel):
         """
         return f"{self.owner}/{self.name}"
 
-    @root_validator(pre=True)
-    def store_provider_raw(cls, values: Any) -> Any:
+    @model_validator(mode="before")
+    @classmethod
+    def store_provider_raw(cls, data: Any) -> Any:
         """
         Store the original provider value before Pydantic validates it.
 
         Preserves the raw provider string for cases where the original format
         matters (e.g., logging, debugging).
         """
-        if isinstance(values, dict) and "provider" in values and "provider_raw" not in values:
-            values["provider_raw"] = values["provider"]
-        return values
+        if isinstance(data, dict) and "provider" in data and "provider_raw" not in data:
+            data["provider_raw"] = data["provider"]
+        return data
 
 
 class FileChangeError(Exception):
@@ -136,28 +178,49 @@ class FileChange(BaseModel):
     the actual content changes and metadata like commit messages.
     """
 
-    change_type: ChangeType = Field(description="Type of file operation")
-    path: str = Field(description="File path relative to repository root")
-    reference_snippet: Optional[str] = Field(
-        default=None,
-        description="Code snippet to find and replace (for edit operations)",
-    )
-    new_snippet: Optional[str] = Field(
-        default=None,
-        description="New code content (for create/edit operations)",
-    )
-    description: Optional[str] = Field(
-        default=None,
-        description="Human-readable description of the change",
-    )
-    commit_message: Optional[str] = Field(
-        default=None,
-        description="Git commit message for this change",
-    )
-    tool_call_id: Optional[str] = Field(
-        default=None,
-        description="ID of the AI tool call that generated this change",
-    )
+    change_type: Annotated[
+        ChangeType,
+        Field(description="Type of file operation"),
+    ]
+    path: Annotated[
+        str,
+        Field(description="File path relative to repository root", examples=["src/main.py"]),
+    ]
+    reference_snippet: Annotated[
+        str | None,
+        Field(
+            default=None,
+            description="Code snippet to find and replace (for edit operations)",
+        ),
+    ]
+    new_snippet: Annotated[
+        str | None,
+        Field(
+            default=None,
+            description="New code content (for create/edit operations)",
+        ),
+    ]
+    description: Annotated[
+        str | None,
+        Field(
+            default=None,
+            description="Human-readable description of the change",
+        ),
+    ]
+    commit_message: Annotated[
+        str | None,
+        Field(
+            default=None,
+            description="Git commit message for this change",
+        ),
+    ]
+    tool_call_id: Annotated[
+        str | None,
+        Field(
+            default=None,
+            description="ID of the AI tool call that generated this change",
+        ),
+    ]
 
     def apply(self, file_contents: str | None) -> str | None:
         """

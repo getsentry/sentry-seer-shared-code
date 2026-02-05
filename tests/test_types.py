@@ -2,9 +2,10 @@
 Tests for type definitions and enums.
 
 Validates that enums behave correctly and maintain backward compatibility.
+Types are shared between v1 and v2, so we test the v1 version.
 """
 
-from sentry_seer_types.types import CommentSeverity, PrReviewFeature, PrReviewTrigger
+from sentry_seer_types.v1.types import CommentSeverity, PrReviewFeature, PrReviewTrigger
 
 
 class TestCommentSeverity:

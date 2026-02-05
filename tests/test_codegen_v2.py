@@ -1,5 +1,5 @@
 """
-Tests for Pydantic v1 codegen request models.
+Tests for Pydantic v2 codegen request models.
 
 Validates the structure of payloads sent from Sentry to Seer for code review.
 These tests ensure backward compatibility and correct validation behavior.
@@ -8,15 +8,15 @@ These tests ensure backward compatibility and correct validation behavior.
 import pytest
 from pydantic import ValidationError
 
-from sentry_seer_types.v1.base import RepoDefinition
-from sentry_seer_types.v1.codegen import (
+from sentry_seer_types.v2.base import RepoDefinition
+from sentry_seer_types.v2.codegen import (
     BugPredictionSpecificInformation,
     CodegenBaseRequest,
     CodegenPrReviewRequest,
     CodeReviewTaskRequest,
     PrReviewConfig,
 )
-from sentry_seer_types.v1.types import PrReviewFeature, PrReviewTrigger
+from sentry_seer_types.v2.types import PrReviewFeature, PrReviewTrigger
 
 
 class TestBugPredictionSpecificInformation:
@@ -288,12 +288,12 @@ class TestCodeReviewTaskRequest:
         )
 
         # Test serialization round-trip maintains structure
-        serialized = task_request.dict()
+        serialized = task_request.model_dump()
         assert serialized["request_type"] == "pr-review"
         assert serialized["data"]["pr_id"] == 42
 
         # Test deserialization
-        restored = CodeReviewTaskRequest.parse_obj(serialized)
+        restored = CodeReviewTaskRequest.model_validate(serialized)
         assert restored.data.pr_id == 42
 
     def test_task_request_with_dict_payload(self) -> None:
@@ -324,7 +324,7 @@ class TestCodeReviewTaskRequest:
         }
 
         # This is the critical test - validating Sentry's payload
-        validated = CodeReviewTaskRequest.parse_obj(payload)
+        validated = CodeReviewTaskRequest.model_validate(payload)
         assert validated.request_type == "pr-review"
         assert validated.data.pr_id == 42
         assert validated.data.config is not None
