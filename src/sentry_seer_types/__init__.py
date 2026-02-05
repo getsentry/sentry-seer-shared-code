@@ -29,45 +29,40 @@ Examples:
 # Otherwise use v1
 try:
     from sentry_seer_types.v2.code_review import (
-        BugPredictionSpecificInformation,
-        CodegenPrReviewRequest,
-        CodeReviewTaskRequest,
         CommentSeverity,
         GitProvider,
-        PrReviewConfig,
-        PrReviewFeature,
-        PrReviewTrigger,
-        RepoDefinition,
-        RequestType,
+        SeerCodeReviewFeature,
+        SeerCodeReviewRequestType,
+        SeerCodeReviewTrigger,
     )
 except ImportError:
     # Fallback to v1 if pydantic v2 is not available
     from sentry_seer_types.v1.code_review import (  # type: ignore[assignment]
         BugPredictionSpecificInformation,
-        CodegenPrReviewRequest,
-        CodeReviewTaskRequest,
         CommentSeverity,
         GitProvider,
-        PrReviewConfig,
-        PrReviewFeature,
-        PrReviewTrigger,
         RepoDefinition,
-        RequestType,
+        SeerCodeReviewConfig,
+        SeerCodeReviewFeature,
+        SeerCodeReviewRequestForPrReview,
+        SeerCodeReviewRequestType,
+        SeerCodeReviewTaskRequestForPrReview,
+        SeerCodeReviewTrigger,
     )
 
 __version__ = "0.1.0"
 
 __all__ = [
-    # Models
+    # Models (only from v1, v2 doesn't have models yet)
     "BugPredictionSpecificInformation",
-    "CodegenPrReviewRequest",
-    "CodeReviewTaskRequest",
-    "PrReviewConfig",
     "RepoDefinition",
+    "SeerCodeReviewConfig",
+    "SeerCodeReviewRequestForPrReview",
+    "SeerCodeReviewTaskRequestForPrReview",
     # Types and enums
     "CommentSeverity",
     "GitProvider",
-    "PrReviewFeature",
-    "PrReviewTrigger",
-    "RequestType",
+    "SeerCodeReviewFeature",
+    "SeerCodeReviewRequestType",
+    "SeerCodeReviewTrigger",
 ]

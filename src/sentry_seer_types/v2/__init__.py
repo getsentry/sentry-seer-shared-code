@@ -11,16 +11,16 @@ Example:
 from sentry_seer_types.v2.code_review import (
     CommentSeverity,
     GitProvider,
-    PrReviewFeature,
-    PrReviewTrigger,
-    RequestType,
+    SeerCodeReviewFeature,
+    SeerCodeReviewRequestType,
+    SeerCodeReviewTrigger,
 )
 
 __all__ = [
     # Types and enums
     "CommentSeverity",
     "GitProvider",
-    "PrReviewFeature",
-    "PrReviewTrigger",
-    "RequestType",
+    "SeerCodeReviewFeature",
+    "SeerCodeReviewRequestType",
+    "SeerCodeReviewTrigger",
 ]

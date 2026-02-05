@@ -21,7 +21,7 @@ GitProvider = Literal["github", "github_enterprise", "gitlab"]
 
 # Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
 # Type alias for PR review request types
-RequestType = Literal["pr-review", "pr-closed"]
+SeerCodeReviewRequestType = Literal["pr-review", "pr-closed"]
 
 
 # =============================================================================
@@ -66,7 +66,7 @@ class CommentSeverity(StrEnum):
 
 
 # Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
-class PrReviewFeature(StrEnum):
+class SeerCodeReviewFeature(StrEnum):
     """
     Features available in PR review.
 
@@ -85,7 +85,7 @@ class PrReviewFeature(StrEnum):
 
 
 # Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
-class PrReviewTrigger(StrEnum):
+class SeerCodeReviewTrigger(StrEnum):
     """
     Events that trigger PR review execution.
 
@@ -109,7 +109,7 @@ class PrReviewTrigger(StrEnum):
     """Triggered when new commits are pushed to the PR"""
 
     @classmethod
-    def _missing_(cls, value: object) -> "PrReviewTrigger":
+    def _missing_(cls, value: object) -> "SeerCodeReviewTrigger":
         """
         Handle unknown trigger values gracefully.
 
@@ -224,7 +224,7 @@ class BugPredictionSpecificInformation(BaseModel):
 
 
 # Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
-class PrReviewConfig(BaseModel):
+class SeerCodeReviewConfig(BaseModel):
     """
     Configuration for PR review execution.
 
@@ -236,12 +236,12 @@ class PrReviewConfig(BaseModel):
     Now maintained in: sentry-seer-types as the shared source of truth
     """
 
-    features: Dict[PrReviewFeature, bool] = Field(
-        default_factory=lambda: {PrReviewFeature.VANILLA: True},
+    features: Dict[SeerCodeReviewFeature, bool] = Field(
+        default_factory=lambda: {SeerCodeReviewFeature.VANILLA: True},
         description="Map of feature names to enabled/disabled status",
     )
-    trigger: PrReviewTrigger = Field(
-        default=PrReviewTrigger.ON_COMMAND_PHRASE,
+    trigger: SeerCodeReviewTrigger = Field(
+        default=SeerCodeReviewTrigger.ON_COMMAND_PHRASE,
         description="Event that triggered this PR review",
     )
     trigger_comment_id: Optional[int] = Field(
@@ -261,13 +261,13 @@ class PrReviewConfig(BaseModel):
         description="GitHub user ID of the user who triggered review",
     )
 
-    def is_feature_enabled(self, feature: PrReviewFeature) -> bool:
+    def is_feature_enabled(self, feature: SeerCodeReviewFeature) -> bool:
         """Check if a specific feature is enabled in this configuration."""
         return self.features.get(feature, False)
 
 
 # Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
-class CodegenPrReviewRequest(BaseModel):
+class SeerCodeReviewRequestForPrReview(BaseModel):
     """
     Complete request payload for PR review operations.
 
@@ -292,14 +292,14 @@ class CodegenPrReviewRequest(BaseModel):
         default=None,
         description="Bug prediction configuration (if feature is enabled)",
     )
-    config: Optional[PrReviewConfig] = Field(
+    config: Optional[SeerCodeReviewConfig] = Field(
         default=None,
         description="PR review execution configuration",
     )
 
 
 # Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
-class CodeReviewTaskRequest(BaseModel):
+class SeerCodeReviewTaskRequestForPrReview(BaseModel):
     """
     Wrapper for code review task requests.
 
@@ -311,8 +311,8 @@ class CodeReviewTaskRequest(BaseModel):
     Now maintained in: sentry-seer-types as the shared source of truth
     """
 
-    request_type: RequestType = Field(description="Type of code review operation to perform")
+    request_type: SeerCodeReviewRequestType = Field(description="Type of code review operation to perform")
     external_owner_id: str = Field(
         description="External repository owner ID for authentication"
     )
-    data: CodegenPrReviewRequest = Field(description="The actual request data for the operation")
+    data: SeerCodeReviewRequestForPrReview = Field(description="The actual request data for the operation")

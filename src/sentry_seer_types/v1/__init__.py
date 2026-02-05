@@ -11,28 +11,28 @@ Example:
 
 from sentry_seer_types.v1.code_review import (
     BugPredictionSpecificInformation,
-    CodegenPrReviewRequest,
-    CodeReviewTaskRequest,
     CommentSeverity,
     GitProvider,
-    PrReviewConfig,
-    PrReviewFeature,
-    PrReviewTrigger,
     RepoDefinition,
-    RequestType,
+    SeerCodeReviewConfig,
+    SeerCodeReviewFeature,
+    SeerCodeReviewRequestForPrReview,
+    SeerCodeReviewRequestType,
+    SeerCodeReviewTaskRequestForPrReview,
+    SeerCodeReviewTrigger,
 )
 
 __all__ = [
     # Models
     "BugPredictionSpecificInformation",
-    "CodegenPrReviewRequest",
-    "CodeReviewTaskRequest",
-    "PrReviewConfig",
     "RepoDefinition",
+    "SeerCodeReviewConfig",
+    "SeerCodeReviewRequestForPrReview",
+    "SeerCodeReviewTaskRequestForPrReview",
     # Types and enums
     "CommentSeverity",
     "GitProvider",
-    "PrReviewFeature",
-    "PrReviewTrigger",
-    "RequestType",
+    "SeerCodeReviewFeature",
+    "SeerCodeReviewRequestType",
+    "SeerCodeReviewTrigger",
 ]

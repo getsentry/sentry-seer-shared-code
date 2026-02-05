@@ -10,12 +10,12 @@ from pydantic import ValidationError
 
 from sentry_seer_types.v1.code_review import (
     BugPredictionSpecificInformation,
-    CodegenPrReviewRequest,
-    CodeReviewTaskRequest,
-    PrReviewConfig,
-    PrReviewFeature,
-    PrReviewTrigger,
     RepoDefinition,
+    SeerCodeReviewConfig,
+    SeerCodeReviewFeature,
+    SeerCodeReviewRequestForPrReview,
+    SeerCodeReviewTaskRequestForPrReview,
+    SeerCodeReviewTrigger,
 )
 
 
@@ -73,35 +73,35 @@ class TestBugPredictionSpecificInformation:
             BugPredictionSpecificInformation(max_num_issues_analyzed=51)
 
 
-class TestPrReviewConfig:
+class TestSeerCodeReviewConfig:
     """Test PR review configuration model."""
 
     def test_default_vanilla_feature_enabled(self) -> None:
         """Default config should have vanilla feature enabled."""
-        config = PrReviewConfig()
-        assert config.features == {PrReviewFeature.VANILLA: True}
-        assert config.is_feature_enabled(PrReviewFeature.VANILLA)
+        config = SeerCodeReviewConfig()
+        assert config.features == {SeerCodeReviewFeature.VANILLA: True}
+        assert config.is_feature_enabled(SeerCodeReviewFeature.VANILLA)
 
     def test_default_trigger(self) -> None:
         """Default trigger should be ON_COMMAND_PHRASE."""
-        config = PrReviewConfig()
-        assert config.trigger == PrReviewTrigger.ON_COMMAND_PHRASE
+        config = SeerCodeReviewConfig()
+        assert config.trigger == SeerCodeReviewTrigger.ON_COMMAND_PHRASE
 
     def test_is_feature_enabled_returns_false_for_disabled(self) -> None:
         """Should return False for features not in config or explicitly disabled."""
-        config = PrReviewConfig(
+        config = SeerCodeReviewConfig(
             features={
-                PrReviewFeature.VANILLA: True,
-                PrReviewFeature.BUG_PREDICTION: False,
+                SeerCodeReviewFeature.VANILLA: True,
+                SeerCodeReviewFeature.BUG_PREDICTION: False,
             }
         )
-        assert config.is_feature_enabled(PrReviewFeature.VANILLA)
-        assert not config.is_feature_enabled(PrReviewFeature.BUG_PREDICTION)
+        assert config.is_feature_enabled(SeerCodeReviewFeature.VANILLA)
+        assert not config.is_feature_enabled(SeerCodeReviewFeature.BUG_PREDICTION)
 
     def test_with_trigger_metadata(self) -> None:
         """Trigger metadata fields should be accepted."""
-        config = PrReviewConfig(
-            trigger=PrReviewTrigger.ON_COMMAND_PHRASE,
+        config = SeerCodeReviewConfig(
+            trigger=SeerCodeReviewTrigger.ON_COMMAND_PHRASE,
             trigger_comment_id=123456,
             trigger_comment_type="issue_comment",
             trigger_user="octocat",
@@ -113,19 +113,19 @@ class TestPrReviewConfig:
 
     def test_ready_for_review_trigger(self) -> None:
         """ON_READY_FOR_REVIEW trigger should have no comment metadata."""
-        config = PrReviewConfig(
-            trigger=PrReviewTrigger.ON_READY_FOR_REVIEW,
+        config = SeerCodeReviewConfig(
+            trigger=SeerCodeReviewTrigger.ON_READY_FOR_REVIEW,
             trigger_user="pr-author",
             trigger_user_id=12345,
         )
-        assert config.trigger == PrReviewTrigger.ON_READY_FOR_REVIEW
+        assert config.trigger == SeerCodeReviewTrigger.ON_READY_FOR_REVIEW
         assert config.trigger_comment_id is None
         assert config.trigger_comment_type is None
 
 
 
 
-class TestCodegenPrReviewRequest:
+class TestSeerCodeReviewRequestForPrReview:
     """Test full PR review request payload."""
 
     def test_minimal_pr_review_request(self) -> None:
@@ -136,7 +136,7 @@ class TestCodegenPrReviewRequest:
             name="sentry",
             external_id="123",
         )
-        request = CodegenPrReviewRequest(
+        request = SeerCodeReviewRequestForPrReview(
             repo=repo,
             pr_id=42,
         )
@@ -158,13 +158,13 @@ class TestCodegenPrReviewRequest:
             organization_slug="my-company",
             should_publish_comments=True,
         )
-        config = PrReviewConfig(
-            features={PrReviewFeature.BUG_PREDICTION: True},
-            trigger=PrReviewTrigger.ON_READY_FOR_REVIEW,
+        config = SeerCodeReviewConfig(
+            features={SeerCodeReviewFeature.BUG_PREDICTION: True},
+            trigger=SeerCodeReviewTrigger.ON_READY_FOR_REVIEW,
             trigger_user="developer",
             trigger_user_id=55555,
         )
-        request = CodegenPrReviewRequest(
+        request = SeerCodeReviewRequestForPrReview(
             repo=repo,
             pr_id=123,
             bug_prediction_specific_information=bug_info,
@@ -174,10 +174,10 @@ class TestCodegenPrReviewRequest:
         assert request.bug_prediction_specific_information is not None
         assert request.bug_prediction_specific_information.organization_id == 789
         assert request.config is not None
-        assert request.config.is_feature_enabled(PrReviewFeature.BUG_PREDICTION)
+        assert request.config.is_feature_enabled(SeerCodeReviewFeature.BUG_PREDICTION)
 
 
-class TestCodeReviewTaskRequest:
+class TestSeerCodeReviewTaskRequestForPrReview:
     """Test complete code review task request wrapper."""
 
     def test_pr_review_task_request(self) -> None:
@@ -189,21 +189,21 @@ class TestCodeReviewTaskRequest:
             external_id="123456",
             base_commit_sha="def456",
         )
-        pr_review_data = CodegenPrReviewRequest(
+        pr_review_data = SeerCodeReviewRequestForPrReview(
             repo=repo,
             pr_id=42,
             bug_prediction_specific_information=BugPredictionSpecificInformation(
                 organization_id=999,
                 organization_slug="test-org",
             ),
-            config=PrReviewConfig(
-                features={PrReviewFeature.BUG_PREDICTION: True},
-                trigger=PrReviewTrigger.ON_COMMAND_PHRASE,
+            config=SeerCodeReviewConfig(
+                features={SeerCodeReviewFeature.BUG_PREDICTION: True},
+                trigger=SeerCodeReviewTrigger.ON_COMMAND_PHRASE,
                 trigger_comment_id=77777,
                 trigger_user="reviewer",
             ),
         )
-        task_request = CodeReviewTaskRequest(
+        task_request = SeerCodeReviewTaskRequestForPrReview(
             request_type="pr-review",
             external_owner_id="123456",
             data=pr_review_data,
@@ -222,11 +222,11 @@ class TestCodeReviewTaskRequest:
             name="repo",
             external_id="1",
         )
-        pr_review_data = CodegenPrReviewRequest(
+        pr_review_data = SeerCodeReviewRequestForPrReview(
             repo=repo,
             pr_id=42,
         )
-        task_request = CodeReviewTaskRequest(
+        task_request = SeerCodeReviewTaskRequestForPrReview(
             request_type="pr-review",
             external_owner_id="1",
             data=pr_review_data,
@@ -238,7 +238,7 @@ class TestCodeReviewTaskRequest:
         assert serialized["data"]["pr_id"] == 42
 
         # Test deserialization
-        restored = CodeReviewTaskRequest.parse_obj(serialized)
+        restored = SeerCodeReviewTaskRequestForPrReview.parse_obj(serialized)
         assert restored.data.pr_id == 42
 
     def test_task_request_with_dict_payload(self) -> None:
@@ -269,8 +269,8 @@ class TestCodeReviewTaskRequest:
         }
 
         # This is the critical test - validating Sentry's payload
-        validated = CodeReviewTaskRequest.parse_obj(payload)
+        validated = SeerCodeReviewTaskRequestForPrReview.parse_obj(payload)
         assert validated.request_type == "pr-review"
         assert validated.data.pr_id == 42
         assert validated.data.config is not None
-        assert validated.data.config.trigger == PrReviewTrigger.ON_READY_FOR_REVIEW
+        assert validated.data.config.trigger == SeerCodeReviewTrigger.ON_READY_FOR_REVIEW

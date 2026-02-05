@@ -19,7 +19,7 @@ GitProvider = Literal["github", "github_enterprise", "gitlab"]
 
 # Type alias for PR review request types
 # Originally from getsentry/seer, now shared via sentry-seer-types
-RequestType = Literal["pr-review", "pr-closed"]
+SeerCodeReviewRequestType = Literal["pr-review", "pr-closed"]
 
 
 # =============================================================================
@@ -62,7 +62,7 @@ class CommentSeverity(StrEnum):
         return severity_rankings[self.value] >= severity_rankings[minimum_severity.value]
 
 
-class PrReviewFeature(StrEnum):
+class SeerCodeReviewFeature(StrEnum):
     """
     Features available in PR review.
 
@@ -80,7 +80,7 @@ class PrReviewFeature(StrEnum):
     """AI-powered bug prediction using static analysis and ML models"""
 
 
-class PrReviewTrigger(StrEnum):
+class SeerCodeReviewTrigger(StrEnum):
     """
     Events that trigger PR review execution.
 
@@ -104,7 +104,7 @@ class PrReviewTrigger(StrEnum):
     """Triggered when new commits are pushed to the PR"""
 
     @classmethod
-    def _missing_(cls, value: object) -> "PrReviewTrigger":
+    def _missing_(cls, value: object) -> "SeerCodeReviewTrigger":
         """
         Handle unknown trigger values gracefully.
 
