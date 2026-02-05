@@ -3,8 +3,10 @@ Code review request and configuration models (Pydantic v1).
 
 This module contains the Pydantic v1 models for Sentry→Seer code review API calls.
 All types, enums, and models are defined here to match the original Sentry structure.
-"""
 
+Unless otherwise stated, all classes are from: getsentry/sentry - src/sentry/seer/code_review/models.py
+"""
+from __future__ import annotations
 from enum import StrEnum
 from typing import Any, Dict, Final, List, Literal, Optional
 
@@ -15,11 +17,11 @@ from pydantic import BaseModel, Field, root_validator
 # Type Aliases
 # =============================================================================
 
-# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
+
 # Type alias for valid Git providers
 GitProvider = Literal["github", "github_enterprise", "gitlab"]
 
-# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
+
 # Type alias for PR review request types
 SeerCodeReviewRequestType = Literal["pr-review", "pr-closed"]
 
@@ -28,7 +30,7 @@ SeerCodeReviewRequestType = Literal["pr-review", "pr-closed"]
 # Enums
 # =============================================================================
 
-# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
+
 class CommentSeverity(StrEnum):
     """
     Severity levels for code review comments using LOGAF classification.
@@ -65,7 +67,7 @@ class CommentSeverity(StrEnum):
         return severity_rankings[self.value] >= severity_rankings[minimum_severity.value]
 
 
-# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
+
 class SeerCodeReviewFeature(StrEnum):
     """
     Features available in PR review.
@@ -84,7 +86,7 @@ class SeerCodeReviewFeature(StrEnum):
     """AI-powered bug prediction using static analysis and ML models"""
 
 
-# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
+
 class SeerCodeReviewTrigger(StrEnum):
     """
     Events that trigger PR review execution.
@@ -124,7 +126,7 @@ class SeerCodeReviewTrigger(StrEnum):
 # Pydantic Models
 # =============================================================================
 
-# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
+
 class RepoDefinition(BaseModel):
     """
     Complete definition of a repository for code review operations.
@@ -168,7 +170,7 @@ class RepoDefinition(BaseModel):
         return values
 
 
-# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
+
 class BugPredictionSpecificInformation(BaseModel):
     """
     Additional configuration for bug prediction features.
@@ -223,7 +225,7 @@ class BugPredictionSpecificInformation(BaseModel):
     )
 
 
-# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
+
 class SeerCodeReviewConfig(BaseModel):
     """
     Configuration for PR review execution.
@@ -266,7 +268,7 @@ class SeerCodeReviewConfig(BaseModel):
         return self.features.get(feature, False)
 
 
-# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
+
 class SeerCodeReviewRequestForPrReview(BaseModel):
     """
     Complete request payload for PR review operations.
@@ -298,7 +300,7 @@ class SeerCodeReviewRequestForPrReview(BaseModel):
     )
 
 
-# Originally from: getsentry/sentry - src/sentry/seer/code_review/models.py
+
 class SeerCodeReviewTaskRequestForPrReview(BaseModel):
     """
     Wrapper for code review task requests.
