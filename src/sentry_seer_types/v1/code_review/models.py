@@ -8,7 +8,7 @@ Unless otherwise stated, all classes are from: getsentry/sentry - src/sentry/see
 """
 from __future__ import annotations
 from enum import StrEnum
-from typing import Any, Dict, Final, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field, root_validator
 
@@ -29,43 +29,6 @@ SeerCodeReviewRequestType = Literal["pr-review", "pr-closed"]
 # =============================================================================
 # Enums
 # =============================================================================
-
-
-class CommentSeverity(StrEnum):
-    """
-    Severity levels for code review comments using LOGAF classification.
-
-    LOGAF (Low, Medium, High, Critical) is used to categorize the importance
-    of issues found during code review.
-
-    Originally defined in: getsentry/seer (Seer codebase)
-    Ported to Sentry: src/sentry/seer/code_review/models.py (Jan 2026)
-    Now maintained in: sentry-seer-types as the shared source of truth
-    """
-
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
-    def meets_minimum(self, minimum_severity: "CommentSeverity") -> bool:
-        """
-        Check if this severity meets a given minimum severity threshold.
-
-        Args:
-            minimum_severity: The minimum severity level required
-
-        Returns:
-            True if this severity is at least as severe as the minimum
-        """
-        severity_rankings: Final[dict[str, int]] = {
-            "low": 1,
-            "medium": 2,
-            "high": 3,
-            "critical": 4,
-        }
-        return severity_rankings[self.value] >= severity_rankings[minimum_severity.value]
-
 
 
 class SeerCodeReviewFeature(StrEnum):

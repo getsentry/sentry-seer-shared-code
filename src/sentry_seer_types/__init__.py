@@ -25,7 +25,6 @@ Examples:
 
 from sentry_seer_types.v1.code_review import (
     BugPredictionSpecificInformation,
-    CommentSeverity,
     GitProvider,
     RepoDefinition,
     SeerCodeReviewConfig,
@@ -50,7 +49,6 @@ __all__ = [
     "SeerCodeReviewTaskRequestForPrClosed",
     "SeerCodeReviewTaskRequestForPrReview",
     # Types and enums
-    "CommentSeverity",
     "GitProvider",
     "SeerCodeReviewFeature",
     "SeerCodeReviewRequestType",
