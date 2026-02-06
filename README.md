@@ -1,4 +1,4 @@
-# Sentry-Seer Types
+# Sentry-Seer Shared Code
 
 Shared Pydantic models for validating payloads between Sentry and Seer code review integration.
 
@@ -14,7 +14,7 @@ This package provides type-safe validation for code review requests sent from Se
 ## Installation
 
 ```bash
-pip install sentry-seer-types
+pip install sentry-seer-shared-code
 ```
 
 ## Usage
@@ -22,7 +22,7 @@ pip install sentry-seer-types
 ### Validating Payloads in Sentry
 
 ```python
-from sentry_seer_types import CodeReviewTaskRequest
+from sentry_seer_shared_code import CodeReviewTaskRequest
 from pydantic import ValidationError
 
 # Validate payload before sending to Seer
@@ -42,7 +42,7 @@ except ValidationError as e:
 ### In Tests
 
 ```python
-from sentry_seer_types import CodeReviewTaskRequest
+from sentry_seer_shared_code import CodeReviewTaskRequest
 
 def test_webhook_creates_valid_payload():
     # ... trigger webhook ...
@@ -56,19 +56,162 @@ def test_webhook_creates_valid_payload():
 
 ## Development
 
+### Quick Start
+
 ```bash
 # Install dev dependencies
 pip install -e ".[dev]"
+
+# Install pre-commit hooks (recommended)
+pre-commit install
+
+# Run pre-commit hooks manually
+pre-commit run --all-files
 
 # Run tests with coverage
 pytest
 
 # Type checking
-mypy src tests
+mypy src/
 
-# Linting and formatting
-ruff check .
-ruff format .
+# Linting
+ruff check src/ tests/
+```
+
+### Building and Validating the Package Locally
+
+Follow these steps to build and validate the Python package locally, ensuring it's production-ready.
+
+#### Prerequisites
+
+- Python 3.11+ installed
+- `pip` and `venv` available
+
+#### Step 1: Setup Development Environment
+
+```bash
+# Clone the repository
+git clone git@github.com:getsentry/sentry-seer-shared-code.git
+cd sentry-seer-shared-code
+
+# Create and activate virtual environment (optional but recommended)
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install package in editable mode with dev dependencies
+pip install -e ".[dev]"
+```
+
+#### Step 2: Run Quality Checks
+
+Run all quality checks to ensure code meets standards:
+
+```bash
+# Linting
+ruff check src/ tests/
+
+# Type checking
+mypy src/
+
+# Tests with coverage
+pytest tests/
+
+# All checks together
+ruff check src/ tests/ && mypy src/ && pytest tests/
+```
+
+**Expected Results:**
+- ✅ Ruff: No linting errors
+- ✅ Mypy: No type errors
+- ✅ Pytest: 49 tests passing, 97% coverage
+
+#### Step 3: Build the Package
+
+Install build tools and create distribution packages:
+
+```bash
+# Install build tool
+pip install build
+
+# Build both wheel and source distribution
+python -m build
+```
+
+**Output:** Two files in `dist/`:
+- `sentry_seer_shared_code-VERSION-py3-none-any.whl` (~10KB wheel)
+- `sentry_seer_shared_code-VERSION.tar.gz` (~14KB source distribution)
+
+#### Step 4: Validate Package Installation
+
+Test that the built package installs and works correctly:
+
+```bash
+# Create a clean test environment
+python -m venv test-env
+source test-env/bin/activate
+
+# Install the built wheel
+pip install dist/sentry_seer_shared_code-*.whl
+
+# Test imports
+python -c "from sentry_seer_shared_code import CodeReviewTaskRequest; print('✅ Top-level import works')"
+python -c "from sentry_seer_shared_code.v1.code_review import CodeReviewTaskRequest; print('✅ v1 import works')"
+python -c "from sentry_seer_shared_code.v2.code_review import CodeReviewTaskRequest; print('✅ v2 import works')"
+
+# Test validation
+python -c "
+from sentry_seer_shared_code import CodeReviewTaskRequest
+payload = {
+    'request_type': 'pr-review',
+    'external_owner_id': '123',
+    'data': {
+        'repo': {'name': 'test', 'owner': 'owner', 'provider': 'github', 'external_id': '123'},
+        'pr_id': 1
+    }
+}
+req = CodeReviewTaskRequest.model_validate(payload)
+print(f'✅ Validation works: {req.request_type}')
+"
+
+# Cleanup
+deactivate
+rm -rf test-env
+```
+
+**Expected Results:**
+- ✅ Top-level import works
+- ✅ v1 import works
+- ✅ v2 import works
+- ✅ Validation works: pr-review
+
+#### Complete Validation Script
+
+Run everything in one command:
+
+```bash
+# Clean previous builds
+rm -rf dist/ build/ src/*.egg-info
+
+# Run quality checks
+echo "Running quality checks..." && \
+ruff check src/ tests/ && \
+mypy src/ && \
+pytest tests/ -q && \
+
+# Build package
+echo "Building package..." && \
+python -m build && \
+
+# Validate installation
+echo "Validating installation..." && \
+python -m venv test-env && \
+source test-env/bin/activate && \
+pip install -q dist/*.whl && \
+python -c "from sentry_seer_shared_code import CodeReviewTaskRequest; print('✅ Package validated successfully')" && \
+deactivate && \
+rm -rf test-env && \
+
+echo "✅ All validation steps passed!"
 ```
 
 ## Versioning
@@ -80,3 +223,9 @@ This package follows semantic versioning:
 - **Patch version** - Bug fixes, documentation
 
 Both Sentry and Seer must use compatible versions of this package.
+
+## License
+
+This project is licensed under the Functional Source License, Version 1.1, Apache 2.0 Future License. See the [LICENSE.md](LICENSE.md) file for details.
+
+The FSL allows you to use, copy, modify, and redistribute the software for any purpose except competing uses. After two years from the release date, the license automatically converts to Apache 2.0.

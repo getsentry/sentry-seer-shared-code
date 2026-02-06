@@ -1,21 +1,21 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel>=0.45.1"]
+requires = ["setuptools>=77.0.0", "wheel>=0.45.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sentry-seer-types"
+name = "sentry-seer-shared-code"
 version = "0.1.0"
 description = "Shared Pydantic models for Sentry and Seer code review integration"
 requires-python = ">=3.11"
 readme = "README.md"
-license = {text = "Apache-2.0"}
+# FSL-1.1-Apache-2.0 (SPDX: FSL-1.1-ALv2); table form required for tooling compatibility
+license = { file = "LICENSE.md" }
 authors = [
     {name = "Sentry Team", email = "oss@sentry.io"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
@@ -27,28 +27,29 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "pydantic>=2.6.4",
+    "pydantic>=1.10.23",  # Supports both v1 (<2) and v2 (>=2)
     "typing-extensions>=4.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "mypy>=1.8.0",
+    "pre-commit>=3.5.0",
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "ruff>=0.1.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/getsentry/sentry-seer-types"
-Repository = "https://github.com/getsentry/sentry-seer-types"
-Issues = "https://github.com/getsentry/sentry-seer-types/issues"
+Homepage = "https://github.com/getsentry/sentry-seer-shared-code"
+Repository = "https://github.com/getsentry/sentry-seer-shared-code"
+Issues = "https://github.com/getsentry/sentry-seer-shared-code/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-sentry_seer_types = ["py.typed"]
+sentry_seer_shared_code = ["py.typed"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -77,7 +78,7 @@ python_functions = ["test_*"]
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=sentry_seer_types",
+    "--cov=sentry_seer_shared_code",
     "--cov-report=term-missing:skip-covered",
     "--cov-report=html",
     "--cov-report=xml",
@@ -104,7 +105,7 @@ select = [
 ignore = ["E501"]  # Line too long (handled by formatter)
 
 [tool.ruff.lint.isort]
-known-first-party = ["sentry_seer_types"]
+known-first-party = ["sentry_seer_shared_code"]
 
 [tool.ruff.format]
 quote-style = "double"
