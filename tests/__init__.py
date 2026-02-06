@@ -1,1 +1,1 @@
-"""Tests for sentry-seer-types package."""
+"""Tests for sentry-seer-shared-code package."""

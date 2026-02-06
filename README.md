@@ -1,4 +1,4 @@
-# Sentry-Seer Types
+# Sentry-Seer Shared Code
 
 Shared Pydantic models for validating payloads between Sentry and Seer code review integration.
 
@@ -14,7 +14,7 @@ This package provides type-safe validation for code review requests sent from Se
 ## Installation
 
 ```bash
-pip install sentry-seer-types
+pip install sentry-seer-shared-code
 ```
 
 ## Usage
@@ -22,7 +22,7 @@ pip install sentry-seer-types
 ### Validating Payloads in Sentry
 
 ```python
-from sentry_seer_types import CodeReviewTaskRequest
+from sentry_seer_shared_code import CodeReviewTaskRequest
 from pydantic import ValidationError
 
 # Validate payload before sending to Seer
@@ -42,7 +42,7 @@ except ValidationError as e:
 ### In Tests
 
 ```python
-from sentry_seer_types import CodeReviewTaskRequest
+from sentry_seer_shared_code import CodeReviewTaskRequest
 
 def test_webhook_creates_valid_payload():
     # ... trigger webhook ...
@@ -91,8 +91,8 @@ Follow these steps to build and validate the Python package locally, ensuring it
 
 ```bash
 # Clone the repository
-git clone git@github.com:getsentry/sentry-seer-types.git
-cd sentry-seer-types
+git clone git@github.com:getsentry/sentry-seer-shared-code.git
+cd sentry-seer-shared-code
 
 # Create and activate virtual environment (optional but recommended)
 python -m venv .venv
@@ -138,8 +138,8 @@ python -m build
 ```
 
 **Output:** Two files in `dist/`:
-- `sentry_seer_types-VERSION-py3-none-any.whl` (~10KB wheel)
-- `sentry_seer_types-VERSION.tar.gz` (~14KB source distribution)
+- `sentry_seer_shared_code-VERSION-py3-none-any.whl` (~10KB wheel)
+- `sentry_seer_shared_code-VERSION.tar.gz` (~14KB source distribution)
 
 #### Step 4: Validate Package Installation
 
@@ -151,16 +151,16 @@ python -m venv test-env
 source test-env/bin/activate
 
 # Install the built wheel
-pip install dist/sentry_seer_types-*.whl
+pip install dist/sentry_seer_shared_code-*.whl
 
 # Test imports
-python -c "from sentry_seer_types import CodeReviewTaskRequest; print('✅ Top-level import works')"
-python -c "from sentry_seer_types.v1.code_review import CodeReviewTaskRequest; print('✅ v1 import works')"
-python -c "from sentry_seer_types.v2.code_review import CodeReviewTaskRequest; print('✅ v2 import works')"
+python -c "from sentry_seer_shared_code import CodeReviewTaskRequest; print('✅ Top-level import works')"
+python -c "from sentry_seer_shared_code.v1.code_review import CodeReviewTaskRequest; print('✅ v1 import works')"
+python -c "from sentry_seer_shared_code.v2.code_review import CodeReviewTaskRequest; print('✅ v2 import works')"
 
 # Test validation
 python -c "
-from sentry_seer_types import CodeReviewTaskRequest
+from sentry_seer_shared_code import CodeReviewTaskRequest
 payload = {
     'request_type': 'pr-review',
     'external_owner_id': '123',
@@ -207,7 +207,7 @@ echo "Validating installation..." && \
 python -m venv test-env && \
 source test-env/bin/activate && \
 pip install -q dist/*.whl && \
-python -c "from sentry_seer_types import CodeReviewTaskRequest; print('✅ Package validated successfully')" && \
+python -c "from sentry_seer_shared_code import CodeReviewTaskRequest; print('✅ Package validated successfully')" && \
 deactivate && \
 rm -rf test-env && \
 

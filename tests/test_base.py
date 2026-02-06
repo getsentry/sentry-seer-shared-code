@@ -4,7 +4,7 @@ Tests for Pydantic v1 code review models (SeerRepoDefinition).
 Validates core data structures used in code review integration.
 """
 
-from sentry_seer_types.v1.code_review import SeerRepoDefinition
+from sentry_seer_shared_code.v1.code_review import SeerRepoDefinition
 
 
 class TestSeerRepoDefinition:

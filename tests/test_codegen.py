@@ -8,7 +8,7 @@ These tests ensure backward compatibility and correct validation behavior.
 import pytest
 from pydantic import ValidationError
 
-from sentry_seer_types.v1.code_review import (
+from sentry_seer_shared_code.v1.code_review import (
     BugPredictionSpecificInformation,
     SeerCodeReviewConfig,
     SeerCodeReviewFeature,
