@@ -9,16 +9,16 @@ Sentry to Seer's code review API. Using shared models ensures:
 
 Pydantic Version Support:
     This package supports both Pydantic v1 and v2:
-    
+
     - Use `sentry_seer_types.v1.*` for Pydantic v1 (pydantic<2)
     - Use `sentry_seer_types.v2.*` for Pydantic v2 (pydantic>=2) - reserved for future use
-    
+
     Currently, all models are in v1 which works with both Pydantic versions.
 
 Examples:
     # In Sentry (Pydantic v1)
     from sentry_seer_types.v1 import SeerCodeReviewConfig
-    
+
     # In Seer (Pydantic v2) - use v1 models for now
     from sentry_seer_types.v1 import SeerCodeReviewConfig
 """
@@ -26,7 +26,6 @@ Examples:
 from sentry_seer_types.v1.code_review import (
     BugPredictionSpecificInformation,
     GitProvider,
-    RepoDefinition,
     SeerCodeReviewConfig,
     SeerCodeReviewFeature,
     SeerCodeReviewRequestForPrClosed,
@@ -35,22 +34,21 @@ from sentry_seer_types.v1.code_review import (
     SeerCodeReviewTaskRequestForPrClosed,
     SeerCodeReviewTaskRequestForPrReview,
     SeerCodeReviewTrigger,
+    SeerRepoDefinition,
 )
 
 __version__ = "0.1.0"
 
 __all__ = [
-    # Models
     "BugPredictionSpecificInformation",
-    "RepoDefinition",
+    "GitProvider",
     "SeerCodeReviewConfig",
+    "SeerCodeReviewFeature",
     "SeerCodeReviewRequestForPrClosed",
     "SeerCodeReviewRequestForPrReview",
+    "SeerCodeReviewRequestType",
     "SeerCodeReviewTaskRequestForPrClosed",
     "SeerCodeReviewTaskRequestForPrReview",
-    # Types and enums
-    "GitProvider",
-    "SeerCodeReviewFeature",
-    "SeerCodeReviewRequestType",
     "SeerCodeReviewTrigger",
+    "SeerRepoDefinition",
 ]

@@ -1,21 +1,18 @@
 """
-Tests for Pydantic v1 code review models (RepoDefinition).
+Tests for Pydantic v1 code review models (SeerRepoDefinition).
 
 Validates core data structures used in code review integration.
 """
 
-import pytest
-from pydantic import ValidationError
-
-from sentry_seer_types.v1.code_review import RepoDefinition
+from sentry_seer_types.v1.code_review import SeerRepoDefinition
 
 
-class TestRepoDefinition:
+class TestSeerRepoDefinition:
     """Test repository definition model and validation."""
 
     def test_minimal_valid_repo(self) -> None:
         """Minimum required fields should create valid repo."""
-        repo = RepoDefinition(
+        repo = SeerRepoDefinition(
             provider="github",
             owner="getsentry",
             name="sentry",
@@ -28,7 +25,7 @@ class TestRepoDefinition:
 
     def test_full_name_property(self) -> None:
         """full_name should return 'owner/name' format."""
-        repo = RepoDefinition(
+        repo = SeerRepoDefinition(
             provider="github",
             owner="getsentry",
             name="sentry",
@@ -36,19 +33,20 @@ class TestRepoDefinition:
         )
         assert repo.full_name == "getsentry/sentry"
 
-    def test_provider_raw_stored_automatically(self) -> None:
-        """Original provider string should be preserved in provider_raw."""
-        repo = RepoDefinition(
+    def test_provider_raw_can_be_set(self) -> None:
+        """provider_raw can be set explicitly when provided."""
+        repo = SeerRepoDefinition(
             provider="github",
             owner="getsentry",
             name="sentry",
             external_id="123",
+            provider_raw="github",
         )
         assert repo.provider_raw == "github"
 
     def test_with_optional_fields(self) -> None:
         """All optional fields should be accepted."""
-        repo = RepoDefinition(
+        repo = SeerRepoDefinition(
             organization_id=42,
             integration_id="int-123",
             provider="github_enterprise",
@@ -59,13 +57,3 @@ class TestRepoDefinition:
         )
         assert repo.organization_id == 42
         assert repo.base_commit_sha == "abc123def456"
-
-    def test_invalid_provider_rejected(self) -> None:
-        """Invalid provider values should raise validation error."""
-        with pytest.raises(ValidationError):
-            RepoDefinition(
-                provider="invalid_provider",  # type: ignore[arg-type]
-                owner="getsentry",
-                name="sentry",
-                external_id="123",
-            )

@@ -74,14 +74,14 @@ jobs:
             pip install -e .
           fi
           
-          # Test default imports (should use v2)
-          python -c "from sentry_seer_types import CodeReviewTaskRequest; print('✅ Default import successful')"
+          # Test default imports (v1 models)
+          python -c "from sentry_seer_types import SeerCodeReviewTaskRequestForPrReview; print('✅ Default import successful')"
           
           # Test v1 imports
-          python -c "from sentry_seer_types.v1 import CodeReviewTaskRequest; print('✅ v1 import successful')"
+          python -c "from sentry_seer_types.v1 import SeerCodeReviewTaskRequestForPrReview; print('✅ v1 import successful')"
           
-          # Test v2 imports
-          python -c "from sentry_seer_types.v2 import CodeReviewTaskRequest; print('✅ v2 import successful')"
+          # v2 is placeholder only; no models to import
+          python -c "import sentry_seer_types.v2; print('✅ v2 import successful')"
           
           # Cleanup
           deactivate

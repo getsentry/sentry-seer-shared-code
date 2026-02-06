@@ -6,6 +6,7 @@ class BranchOverride(BaseModel):
     tag_value: str = Field(description="The tag value to match against")
     branch_name: str = Field(description="The branch to use when this tag matches")
 
+
 class SeerRepoDefinition(BaseModel):
     organization_id: int | None = None
     integration_id: str | None = None
@@ -27,3 +28,8 @@ class SeerRepoDefinition(BaseModel):
     )
     base_commit_sha: str | None = None
     provider_raw: str | None = None
+
+    @property
+    def full_name(self) -> str:
+        """Full repository name in 'owner/name' format."""
+        return f"{self.owner}/{self.name}"

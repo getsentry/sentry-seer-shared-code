@@ -5,7 +5,6 @@ Pydantic v1 code review models for Sentry-Seer integration.
 from sentry_seer_types.v1.code_review.models import (
     BugPredictionSpecificInformation,
     GitProvider,
-    RepoDefinition,
     SeerCodeReviewConfig,
     SeerCodeReviewFeature,
     SeerCodeReviewRequestForPrClosed,
@@ -15,19 +14,18 @@ from sentry_seer_types.v1.code_review.models import (
     SeerCodeReviewTaskRequestForPrReview,
     SeerCodeReviewTrigger,
 )
+from sentry_seer_types.v1.seer.models import SeerRepoDefinition
 
 __all__ = [
-    # Models
     "BugPredictionSpecificInformation",
-    "RepoDefinition",
+    "GitProvider",
     "SeerCodeReviewConfig",
+    "SeerCodeReviewFeature",
     "SeerCodeReviewRequestForPrClosed",
     "SeerCodeReviewRequestForPrReview",
+    "SeerCodeReviewRequestType",
     "SeerCodeReviewTaskRequestForPrClosed",
     "SeerCodeReviewTaskRequestForPrReview",
-    # Types and enums
-    "GitProvider",
-    "SeerCodeReviewFeature",
-    "SeerCodeReviewRequestType",
     "SeerCodeReviewTrigger",
+    "SeerRepoDefinition",
 ]

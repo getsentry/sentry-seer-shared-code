@@ -10,97 +10,81 @@ from pydantic import ValidationError
 
 from sentry_seer_types.v1.code_review import (
     BugPredictionSpecificInformation,
-    RepoDefinition,
     SeerCodeReviewConfig,
     SeerCodeReviewFeature,
     SeerCodeReviewRequestForPrReview,
     SeerCodeReviewTaskRequestForPrReview,
     SeerCodeReviewTrigger,
+    SeerRepoDefinition,
 )
 
 
 class TestBugPredictionSpecificInformation:
     """Test bug prediction configuration model."""
 
-    def test_default_values(self) -> None:
-        """Default values should be sensible for production use."""
-        info = BugPredictionSpecificInformation()
-        assert info.callback_url is None
-        assert info.organization_id is None
-        assert info.organization_slug is None
-        assert info.warnings == []
-        assert info.max_num_associations == 10
-        assert info.max_num_issues_analyzed == 10
-        assert info.should_post_to_overwatch is False
-        assert info.should_publish_comments is False
-        assert info.is_local_run is False
+    def test_required_fields(self) -> None:
+        """organization_id and organization_slug are required."""
+        info = BugPredictionSpecificInformation(
+            organization_id=123,
+            organization_slug="my-org",
+        )
+        assert info.organization_id == 123
+        assert info.organization_slug == "my-org"
 
     def test_with_all_fields(self) -> None:
         """All fields should be accepted when provided."""
         info = BugPredictionSpecificInformation(
-            callback_url="https://sentry.io/callback",
-            organization_id=123,
-            organization_slug="my-org",
-            warnings=[{"file": "test.py", "line": 10, "message": "Unused variable"}],
-            max_num_associations=20,
-            max_num_issues_analyzed=15,
-            should_post_to_overwatch=True,
-            should_publish_comments=True,
-            is_local_run=True,
+            organization_id=456,
+            organization_slug="other-org",
         )
-        assert info.organization_id == 123
-        assert info.max_num_associations == 20
-        assert info.should_post_to_overwatch is True
+        assert info.organization_id == 456
+        assert info.organization_slug == "other-org"
 
-    def test_max_num_associations_must_be_positive(self) -> None:
-        """max_num_associations must be >= 1."""
+    def test_missing_organization_id_raises(self) -> None:
+        """organization_id is required."""
         with pytest.raises(ValidationError):
-            BugPredictionSpecificInformation(max_num_associations=0)
+            BugPredictionSpecificInformation(organization_slug="my-org")
 
-    def test_max_num_associations_has_upper_limit(self) -> None:
-        """max_num_associations should not exceed 100."""
+    def test_missing_organization_slug_raises(self) -> None:
+        """organization_slug is required."""
         with pytest.raises(ValidationError):
-            BugPredictionSpecificInformation(max_num_associations=101)
-
-    def test_max_num_issues_analyzed_must_be_positive(self) -> None:
-        """max_num_issues_analyzed must be >= 1."""
-        with pytest.raises(ValidationError):
-            BugPredictionSpecificInformation(max_num_issues_analyzed=0)
-
-    def test_max_num_issues_analyzed_has_upper_limit(self) -> None:
-        """max_num_issues_analyzed should not exceed 50."""
-        with pytest.raises(ValidationError):
-            BugPredictionSpecificInformation(max_num_issues_analyzed=51)
+            BugPredictionSpecificInformation(organization_id=123)
 
 
 class TestSeerCodeReviewConfig:
     """Test PR review configuration model."""
 
-    def test_default_vanilla_feature_enabled(self) -> None:
-        """Default config should have vanilla feature enabled."""
-        config = SeerCodeReviewConfig()
-        assert config.features == {SeerCodeReviewFeature.VANILLA: True}
-        assert config.is_feature_enabled(SeerCodeReviewFeature.VANILLA)
+    def test_default_features_empty(self) -> None:
+        """Default config should have empty features dict."""
+        config = SeerCodeReviewConfig(trigger=SeerCodeReviewTrigger.ON_COMMAND_PHRASE)
+        assert config.features == {}
+        assert not config.is_feature_enabled(SeerCodeReviewFeature.BUG_PREDICTION)
 
     def test_default_trigger(self) -> None:
-        """Default trigger should be ON_COMMAND_PHRASE."""
-        config = SeerCodeReviewConfig()
+        """Trigger is required; ON_COMMAND_PHRASE is a valid value."""
+        config = SeerCodeReviewConfig(trigger=SeerCodeReviewTrigger.ON_COMMAND_PHRASE)
         assert config.trigger == SeerCodeReviewTrigger.ON_COMMAND_PHRASE
 
     def test_is_feature_enabled_returns_false_for_disabled(self) -> None:
         """Should return False for features not in config or explicitly disabled."""
         config = SeerCodeReviewConfig(
-            features={
-                SeerCodeReviewFeature.VANILLA: True,
-                SeerCodeReviewFeature.BUG_PREDICTION: False,
-            }
+            features={SeerCodeReviewFeature.BUG_PREDICTION: False},
+            trigger=SeerCodeReviewTrigger.ON_COMMAND_PHRASE,
         )
-        assert config.is_feature_enabled(SeerCodeReviewFeature.VANILLA)
         assert not config.is_feature_enabled(SeerCodeReviewFeature.BUG_PREDICTION)
+
+    def test_is_feature_enabled_returns_true_when_enabled(self) -> None:
+        """Should return True for features explicitly enabled."""
+        config = SeerCodeReviewConfig(
+            features={SeerCodeReviewFeature.BUG_PREDICTION: True},
+            trigger=SeerCodeReviewTrigger.ON_COMMAND_PHRASE,
+        )
+        assert config.is_feature_enabled(SeerCodeReviewFeature.BUG_PREDICTION)
 
     def test_with_trigger_metadata(self) -> None:
         """Trigger metadata fields should be accepted."""
         config = SeerCodeReviewConfig(
+            features={},
             trigger=SeerCodeReviewTrigger.ON_COMMAND_PHRASE,
             trigger_comment_id=123456,
             trigger_comment_type="issue_comment",
@@ -114,6 +98,7 @@ class TestSeerCodeReviewConfig:
     def test_ready_for_review_trigger(self) -> None:
         """ON_READY_FOR_REVIEW trigger should have no comment metadata."""
         config = SeerCodeReviewConfig(
+            features={},
             trigger=SeerCodeReviewTrigger.ON_READY_FOR_REVIEW,
             trigger_user="pr-author",
             trigger_user_id=12345,
@@ -123,14 +108,12 @@ class TestSeerCodeReviewConfig:
         assert config.trigger_comment_type is None
 
 
-
-
 class TestSeerCodeReviewRequestForPrReview:
     """Test full PR review request payload."""
 
     def test_minimal_pr_review_request(self) -> None:
         """PR review request with only required fields should be valid."""
-        repo = RepoDefinition(
+        repo = SeerRepoDefinition(
             provider="github",
             owner="getsentry",
             name="sentry",
@@ -146,7 +129,7 @@ class TestSeerCodeReviewRequestForPrReview:
 
     def test_full_pr_review_request(self) -> None:
         """PR review request with all fields should be valid."""
-        repo = RepoDefinition(
+        repo = SeerRepoDefinition(
             provider="github",
             owner="getsentry",
             name="sentry",
@@ -156,7 +139,6 @@ class TestSeerCodeReviewRequestForPrReview:
         bug_info = BugPredictionSpecificInformation(
             organization_id=789,
             organization_slug="my-company",
-            should_publish_comments=True,
         )
         config = SeerCodeReviewConfig(
             features={SeerCodeReviewFeature.BUG_PREDICTION: True},
@@ -182,7 +164,7 @@ class TestSeerCodeReviewTaskRequestForPrReview:
 
     def test_pr_review_task_request(self) -> None:
         """Complete PR review task request should validate correctly."""
-        repo = RepoDefinition(
+        repo = SeerRepoDefinition(
             provider="github",
             owner="getsentry",
             name="sentry",
@@ -216,7 +198,7 @@ class TestSeerCodeReviewTaskRequestForPrReview:
 
     def test_task_request_validates_nested_models(self) -> None:
         """Validation errors in nested models should be caught."""
-        repo = RepoDefinition(
+        repo = SeerRepoDefinition(
             provider="github",
             owner="test",
             name="repo",

@@ -6,13 +6,16 @@ All types, enums, and models are defined here to match the original Sentry struc
 
 Unless otherwise stated, all classes are from: getsentry/sentry - src/sentry/seer/code_review/models.py
 """
-import datetime
+
 from __future__ import annotations
+
+from datetime import datetime  # noqa: TC003
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field
 
+from sentry_seer_types.v1.seer.models import SeerRepoDefinition  # noqa: TC001
 
 # =============================================================================
 # Type Aliases
@@ -36,7 +39,6 @@ class SeerCodeReviewFeature(StrEnum):
     BUG_PREDICTION = "bug_prediction"
 
 
-
 class SeerCodeReviewTrigger(StrEnum):
     UNKNOWN = "unknown"
     ON_COMMAND_PHRASE = "on_command_phrase"
@@ -53,13 +55,11 @@ class SeerCodeReviewTrigger(StrEnum):
 # =============================================================================
 
 
-
 class BugPredictionSpecificInformation(BaseModel):
     """Information specific to bug prediction feature."""
 
     organization_id: int
     organization_slug: str
-
 
 
 class SeerCodeReviewConfig(BaseModel):
@@ -76,7 +76,6 @@ class SeerCodeReviewConfig(BaseModel):
         return self.features.get(feature, False)
 
 
-
 class SeerCodeReviewRequestForPrReview(BaseModel):
     """
     Complete request payload for PR review operations.
@@ -88,13 +87,13 @@ class SeerCodeReviewRequestForPrReview(BaseModel):
     Now maintained in: sentry-seer-types as the shared source of truth
     """
 
-    repo: RepoDefinition = Field(description="Repository containing the code/PR to analyze")
+    repo: SeerRepoDefinition = Field(description="Repository containing the code/PR to analyze")
     pr_id: int = Field(description="Pull request number", gt=0)
-    codecov_status: Dict[str, str] | None = Field(
+    codecov_status: dict[str, str] | None = Field(
         default=None,
         description="Codecov test coverage status for the PR",
     )
-    more_readable_repos: List[RepoDefinition] = Field(
+    more_readable_repos: list[SeerRepoDefinition] = Field(
         default_factory=list,
         description="Additional repositories accessible for code search and context",
     )
@@ -106,7 +105,6 @@ class SeerCodeReviewRequestForPrReview(BaseModel):
         default=None,
         description="PR review execution configuration",
     )
-
 
 
 class SeerCodeReviewTaskRequestForPrReview(BaseModel):
@@ -121,12 +119,13 @@ class SeerCodeReviewTaskRequestForPrReview(BaseModel):
     Now maintained in: sentry-seer-types as the shared source of truth
     """
 
-    request_type: SeerCodeReviewRequestType = Field(description="Type of code review operation to perform")
-    external_owner_id: str = Field(
-        description="External repository owner ID for authentication"
+    request_type: SeerCodeReviewRequestType = Field(
+        description="Type of code review operation to perform"
     )
-    data: SeerCodeReviewRequestForPrReview = Field(description="The actual request data for the operation")
-
+    external_owner_id: str = Field(description="External repository owner ID for authentication")
+    data: SeerCodeReviewRequestForPrReview = Field(
+        description="The actual request data for the operation"
+    )
 
 
 class SeerCodeReviewRequestForPrClosed(BaseModel):
@@ -138,9 +137,9 @@ class SeerCodeReviewRequestForPrClosed(BaseModel):
     Originally defined in: getsentry/sentry - src/sentry/seer/code_review/models.py
     """
 
-    repo: RepoDefinition = Field(description="Repository containing the closed PR")
+    repo: SeerRepoDefinition = Field(description="Repository containing the closed PR")
     pr_id: int = Field(description="Pull request number", gt=0)
-    more_readable_repos: List[RepoDefinition] = Field(
+    more_readable_repos: list[SeerRepoDefinition] = Field(
         default_factory=list,
         description="Additional repositories accessible for code search and context",
     )
@@ -154,7 +153,6 @@ class SeerCodeReviewRequestForPrClosed(BaseModel):
     )
 
 
-
 class SeerCodeReviewTaskRequestForPrClosed(BaseModel):
     """
     Wrapper for PR closed task requests.
@@ -164,8 +162,10 @@ class SeerCodeReviewTaskRequestForPrClosed(BaseModel):
     Originally defined in: getsentry/sentry - src/sentry/seer/code_review/models.py
     """
 
-    request_type: SeerCodeReviewRequestType = Field(description="Type of code review operation to perform")
-    external_owner_id: str = Field(
-        description="External repository owner ID for authentication"
+    request_type: SeerCodeReviewRequestType = Field(
+        description="Type of code review operation to perform"
     )
-    data: SeerCodeReviewRequestForPrClosed = Field(description="The actual request data for the operation")
+    external_owner_id: str = Field(description="External repository owner ID for authentication")
+    data: SeerCodeReviewRequestForPrClosed = Field(
+        description="The actual request data for the operation"
+    )
