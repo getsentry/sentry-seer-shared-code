@@ -6,10 +6,12 @@
 #   make install                # Install with default deps (no Pydantic override)
 #   make lint typecheck test    # Run lint, typecheck, tests
 #   make build validate-install # Build wheel and validate install (set PYDANTIC_SPEC for venv)
+#   make clean                  # Remove caches and build artifacts (keeps .venv)
+#   make ci                     # Run all CI steps in one shot (install, lint, typecheck, test, build, validate-install)
 
 PYDANTIC_SPEC ?=
 
-.PHONY: install install-pydantic-v1 install-pydantic-v2 lint typecheck test build validate-install
+.PHONY: install install-pydantic-v1 install-pydantic-v2 lint typecheck test build validate-install clean ci
 
 install:
 	python -m pip install --upgrade pip
@@ -36,6 +38,22 @@ test:
 build:
 	pip install build
 	python -m build
+
+# Run all CI steps in one shot (same sequence as the 3.11 + Pydantic v2 job).
+ci: install-pydantic-v2
+	$(MAKE) lint
+	$(MAKE) typecheck
+	$(MAKE) test
+	$(MAKE) build
+	$(MAKE) validate-install PYDANTIC_SPEC="pydantic>=2.6.4"
+
+# Remove caches and produced files; does not remove .venv
+clean:
+	rm -rf build/ dist/ test-env/
+	rm -rf .pytest_cache/ .mypy_cache/ .ruff_cache/ htmlcov/
+	rm -f .coverage coverage.xml .dmypy.json dmypy.json
+	@find . -path ./.venv -prune -o -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	@find . -path ./.venv -prune -o -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
 
 # Validates that the built wheel (or editable install) can be installed and imports work.
 # Set PYDANTIC_SPEC when calling from CI, e.g. make validate-install PYDANTIC_SPEC="pydantic>=1.10.23,<2"

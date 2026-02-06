@@ -20,16 +20,5 @@ def pytest_configure(config):
 def pytest_ignore_collect(collection_path, config):
     """Ignore collecting test files based on pydantic version."""
     path_str = str(collection_path)
-
-    # Don't collect v2 tests if pydantic v1 is installed
-    if PYDANTIC_VERSION < 2 and "_v2.py" in path_str:
-        return True
-
-    # Don't collect v1-specific tests if pydantic v2 is installed
-    # (test_base.py and test_codegen.py without _v2 suffix)
-    return (
-        PYDANTIC_VERSION >= 2
-        and (path_str.endswith("test_base.py") or path_str.endswith("test_codegen.py"))
-        and "_v2.py" not in path_str
-        and "test_types.py" not in path_str
-    )
+    # Don't collect v2-only tests if pydantic v1 is installed
+    return PYDANTIC_VERSION < 2 and "_v2.py" in path_str

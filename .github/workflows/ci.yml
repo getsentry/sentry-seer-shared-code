@@ -53,3 +53,62 @@ jobs:
       - name: Validate package installation
         if: matrix.python-version == '3.11'
         run: make validate-install PYDANTIC_SPEC="${{ matrix.pydantic-spec }}"
+
+  sentry-code-review-tests:
+    name: Sentry code_review tests with local shared types
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+    env:
+      SENTRY_SKIP_SERVICE_VALIDATION: "1"
+    steps:
+      - name: Checkout shared types repo
+        uses: actions/checkout@v4
+
+      - name: Build shared types package
+        run: |
+          make install PYDANTIC_SPEC="pydantic>=1.10.23,<2"
+          make build
+
+      - name: Checkout Sentry
+        uses: actions/checkout@v4
+        with:
+          repository: getsentry/sentry
+          path: sentry
+          ref: master
+
+      - name: Set up Sentry Python env
+        uses: astral-sh/setup-uv@884ad927a57e558e7a70b92f2bccf9198a4be546 # v6
+        with:
+          version: "0.8.2"
+          enable-cache: false
+
+      - name: Install Sentry dependencies
+        uses: getsentry/action-setup-venv@3a832a9604b3e1a4202ae559248f26867b467cc7 # v2.1.1
+        with:
+          python-version: "3.13.1"
+          cache-dependency-path: sentry/uv.lock
+          install-cmd: cd sentry && uv sync --frozen --active
+
+      - name: Install Sentry editable and start devservices
+        run: |
+          cd sentry
+          python3 -m tools.fast_editable --path .
+          sentry init
+          devservices up --mode backend-ci
+          echo "DJANGO_LIVE_TEST_SERVER_ADDRESS=$(docker network inspect bridge --format='{{(index .IPAM.Config 0).Gateway}}')" >> $GITHUB_ENV
+
+      - name: Install local shared types and patch Sentry imports
+        run: |
+          cd sentry
+          uv pip install "$GITHUB_WORKSPACE/dist/"*.whl
+          # Sentry imports sentry_seer_types; this repo provides sentry_seer_shared_code.
+          sed -i 's/sentry_seer_types/sentry_seer_shared_code/g' src/sentry/seer/code_review/models.py
+
+      - name: Run Sentry code_review tests
+        run: |
+          cd sentry
+          python3 -b -m pytest tests/sentry/seer/code_review \
+            --reuse-db \
+            -v \
+            --tb=short
