@@ -36,6 +36,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install "${{ matrix.pydantic-spec }}"
           pip install -e ".[dev]"
+        working-directory: ${{ github.workspace }}
       
       - name: Run linting
         if: matrix.python-version == '3.11' && matrix.pydantic-version == 'v2'

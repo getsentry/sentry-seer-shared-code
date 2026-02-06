@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel>=0.45.1"]
+requires = ["setuptools>=77.0.0", "wheel>=0.45.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,7 +8,8 @@ version = "0.1.0"
 description = "Shared Pydantic models for Sentry and Seer code review integration"
 requires-python = ">=3.11"
 readme = "README.md"
-license = {text = "FSL-1.1-Apache-2.0"}
+license = "FSL-1.1-Apache-2.0"
+license-files = ["LICENSE.md"]
 authors = [
     {name = "Sentry Team", email = "oss@sentry.io"}
 ]
@@ -49,9 +50,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 sentry_seer_shared_code = ["py.typed"]
-
-[tool.setuptools]
-license-files = ["LICENSE.md"]
 
 [tool.mypy]
 python_version = "3.11"
