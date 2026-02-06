@@ -12,6 +12,7 @@ jobs:
     name: Validate Package (Python ${{ matrix.python-version }}, Pydantic ${{ matrix.pydantic-version }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.11", "3.12"]
         pydantic-version: ["v1", "v2"]
