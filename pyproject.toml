@@ -8,8 +8,8 @@ version = "0.1.0"
 description = "Shared Pydantic models for Sentry and Seer code review integration"
 requires-python = ">=3.11"
 readme = "README.md"
-license = "FSL-1.1-Apache-2.0"
-license-files = ["LICENSE.md"]
+# FSL-1.1-Apache-2.0 (SPDX: FSL-1.1-ALv2); table form required for tooling compatibility
+license = { file = "LICENSE.md" }
 authors = [
     {name = "Sentry Team", email = "oss@sentry.io"}
 ]
